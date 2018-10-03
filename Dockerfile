@@ -38,7 +38,7 @@ RUN lerna bootstrap --hoist
 RUN lerna run clean
 RUN lerna run build
 
-EXPOSE 8080-8090
+EXPOSE 8181-8190
 
 CMD [ "pm2-runtime", "pm2.json" ]
 
