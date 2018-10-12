@@ -1,0 +1,63 @@
+﻿@model OVE.Service.AssetManager.Models.OVEAssetModel
+@using OVE.Service.AssetManager.Domain
+@inject ServiceRepository FileTypes
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2>Create</h2>
+
+<h4>AssetFileModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Project" class="control-label"></label>
+                <input asp-for="Project" class="form-control" />
+                <span asp-validation-for="Project" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Service" class="control-label"></label>
+                @Html.DropDownList("Service", FileTypes.GetServices(),new { @class = "form-control" })
+                <span asp-validation-for="Service" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AssetMeta" class="control-label"></label>
+                <input asp-for="AssetMeta" class="form-control" />
+                <span asp-validation-for="AssetMeta" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @Html.Label("StorageLocation", "Asset File", new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="file" id="upload" name="upload" title="Choose file" />
+                </div>
+                <br />
+                <span asp-validation-for="StorageLocation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

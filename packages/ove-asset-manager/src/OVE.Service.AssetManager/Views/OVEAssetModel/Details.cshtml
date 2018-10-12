@@ -1,0 +1,78 @@
+﻿@model OVE.Service.AssetManager.Models.OVEAssetModel
+@using OVE.Service.AssetManager.Domain
+@inject ServiceRepository Services
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>OVE Asset Model</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Project)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Project)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Service)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Service)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ProcessingState)
+        </dt>
+        <dd>
+            @{ var state = Services.TranslateProcessingState(Model);}
+            @Html.DisplayFor(model => state)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ProcessingErrors)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ProcessingErrors)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.AssetMeta)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.AssetMeta)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.LastModified)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.LastModified)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.StorageLocation)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.StorageLocation)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+<div>
+    <iframe src="@{ Services.GetViewUrl(Model); }" onload="this.width=screen.width;this.height=50%" />
+</div>

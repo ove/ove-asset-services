@@ -1,6 +1,16 @@
 {
   "apps": [
     {
+      "name": "@ove/ove-asset-manager",
+      "cwd": "./packages/ove-asset-manager",
+      "kill_timeout": 3000,
+      "restart_delay": 3000,
+      "script": "npm",
+      "args": "run start",
+      "env": {
+          "PORT": "8181"
+      }
+    },{
       "name": "@ove/ove-service-imagetiles",
       "cwd": "./packages/ove-service-imagetiles",
       "kill_timeout": 3000,
@@ -8,7 +18,7 @@
       "script": "npm",
       "args": "run start",
       "env": {
-          "PORT": "8181"
+          "PORT": "8182"
       }
     }
   ]

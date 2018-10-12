@@ -1,0 +1,15 @@
+{
+  "name": "@ove/ove-asset-manager",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "npx rimraf dist && npx rimraf src/OVE.Service.AssetManager/bin && npx rimraf src/OVE.Service.AssetManager/obj && npx rimraf AssetFiles.db",
+    "build": "dotnet restore src/OVE.Service.AssetManager && dotnet build src/OVE.Service.AssetManager && dotnet publish src/OVE.Service.AssetManager -o ../../dist",
+    "start": "dotnet dist/OVE.Service.AssetManager.dll --server.urls=http://0.0.0.0:${PORT-'8080'}"
+  },
+  "keywords": [],
+  "author": "David Birch <david.birch@imperial.ac.uk>",
+  "license": "MIT",
+  "dependencies": {}
+}
