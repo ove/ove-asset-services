@@ -27,6 +27,13 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\Database\" />
+    <Folder Include="wwwroot\ImageStore\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\Image\ViewImage.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

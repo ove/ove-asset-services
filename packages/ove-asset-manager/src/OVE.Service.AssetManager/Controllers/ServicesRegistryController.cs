@@ -30,5 +30,17 @@ namespace OVE.Service.AssetManager.Controllers
             _serviceRepository.UpdateService(service);
             return Ok();
         }
+
+        /// <summary>
+        /// Return details of the service registration
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/ServicesRegistry/GetService")]
+        public ActionResult<OVEService> GetService(string name) {
+            return _serviceRepository.GetService(name);
+        }
+
     }
 }

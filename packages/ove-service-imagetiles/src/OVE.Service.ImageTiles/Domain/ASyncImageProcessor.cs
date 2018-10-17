@@ -1,31 +1,31 @@
 ﻿using System;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Amazon.S3;
+using Amazon.S3.Transfer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OVE.Service.ImageTiles.DbContexts;
+using Newtonsoft.Json;
 using OVE.Service.ImageTiles.Models;
 
 namespace OVE.Service.ImageTiles.Domain {
     public class ASyncImageProcessor : IHostedService, IDisposable {
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ImageProcessor _processor;
         private Timer _timer;
 
         private readonly SemaphoreSlim _processing;
         private int maxConcurrent;
 
-        public ASyncImageProcessor(ILogger<ASyncImageProcessor> logger, IConfiguration configuration,
-            IServiceProvider serviceProvider, ImageProcessor processor) {
+        public ASyncImageProcessor(ILogger<ASyncImageProcessor> logger, IConfiguration configuration, ImageProcessor processor) {
             _logger = logger;
             _configuration = configuration;
-            _serviceProvider = serviceProvider;
             _processor = processor;
             maxConcurrent = _configuration.GetValue<int>("ImageProcessingConfig:MaxConcurrent");
             _processing = new SemaphoreSlim(maxConcurrent, maxConcurrent);
@@ -52,75 +52,216 @@ namespace OVE.Service.ImageTiles.Domain {
             _timer?.Dispose();
         }
 
+        /// <summary>
+        /// Steps to process an image:
+        /// 1) Get the asset to process
+        /// 2) Download it
+        /// 3) Create DZI
+        /// 4) Upload it
+        /// 5) Mark it as completed
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
         private async void ProcessImage(object state) {
             if (!_processing.Wait(10)) {
                 _logger.LogInformation("Tried to fire Image Processing but too many threads already running");
                 return;
             }
 
-            using (var scope = _serviceProvider.CreateScope()) {
+            OVEAssetModel asset = null;
+            try {
+                // 1) get an Asset to process
+                asset = await FindAssetToProcess();
 
-                using (var context = scope.ServiceProvider.GetRequiredService<ImageFileContext>()) {
+                if (asset == null) {
+                    _logger.LogInformation("no work for Image Processor, running Processors = " +
+                                           (maxConcurrent - _processing.CurrentCount - 1));
+                }
+                else {
+                    _logger.LogInformation("Found asset "+asset.Id);
 
-                    ImageFileModel todo = null;
-                    try {
+                    // 2) download it
+                    string url = await GetAssetUri(asset);
 
-                        todo = await context.ImageFiles.FirstOrDefaultAsync(i => i.ProcessingState == 0);
+                    string localUri = DownloadAsset(url,asset);
 
-                        if (todo != null) {
-                            todo.ProcessingState = 1;
-                            todo.ProcessingErrors = "processing";
+                    // 3) Create DZI file 
+                    await UpdateStatus(asset, ProcessingStates.CreatingDZI);
+                    var res = _processor.ProcessFile(localUri);
+                    _logger.LogInformation("Processed file "+res);
 
-                            context.SaveChanges();// this may throw a DbUpdateConcurrencyException 
-                        }
+                    // 4) Upload it
+                    await UpdateStatus(asset, ProcessingStates.Uploading);
+                    await UploadDirectory(localUri,asset);
+                    
+                    // 5) delete local files 
+                    _logger.LogInformation("about to delete files");
+                    Directory.Delete(Path.GetDirectoryName(localUri), true);
 
-                        if (todo == null) {
-                            _logger.LogInformation("no work for Image Processor, running Processors = "+(maxConcurrent-_processing.CurrentCount-1));
-                        }
-                        else {
-                            // do some processing!
+                    // 6) Mark it as completed            
+                    await UpdateStatus(asset, ProcessingStates.Processed);
+                }
+            } catch (Exception e) {
+                
+                _logger.LogError(e, "Exception in Image Processing");
+                if (asset != null) {
+                    await UpdateStatus(asset,ProcessingStates.Error,e.ToString());
+                }
+            } finally {
+                _processing.Release();
+            }
 
-                            _logger.LogInformation("Starting processing of Image Model id=" + todo.Id);
+        }
 
-                            //figure out where the image is 
-                            var file = Path.Combine(ImageFileModel.GetImagesBasePath(_configuration, _logger),
-                                todo.Project);
-                            file = Path.Combine(file, todo.StorageLocation);
+        private async Task<bool> UpdateStatus(OVEAssetModel asset, ProcessingStates state, string errors = null) {
+            
+            var url = _configuration.GetValue<string>("AssetManagerHost") +
+                      _configuration.GetValue<string>("SetStateApi") +
+                      asset.Id + "/" + (int) state;
 
-                            if (!File.Exists(file)) {
-                                throw new Exception("Found an orphan image model - no corresponding file " + todo.Id);
-                            }
-
-                            // processing 
-                            var output = _processor.ProcessFile(file);
-                            if (!Directory.Exists(output)) {
-                                throw new Exception("Image processor failed for " + todo.Id);
-                            }
-
-                            // say that we did it
-                            todo.ProcessingState = 2;
-                            todo.ProcessingErrors = "processed";
-                            context.Update(todo);
-                            await context.SaveChangesAsync();
-                        }
-                    } catch (DbUpdateConcurrencyException e) {
-                        // do nothing this is intended to stop multiple 
-                        _logger.LogDebug("stopped double processing"+e);
-                    } catch (Exception e) {
-                        _logger.LogError(e, "Exception in Image Processing");
-                        if (todo != null) {
-                            // log to db
-                            todo.ProcessingState = -1;
-                            todo.ProcessingErrors = e.ToString();
-                            context.Update(todo);
-                            await context.SaveChangesAsync();
-                        }
-                    }
-                    finally {
-                        _processing.Release();
-                    }
+            if (errors != null) {
+                url += "?message=" + Uri.EscapeDataString(errors);
+            }
+            _logger.LogInformation("Setting Asset Status to "+state);
+            using (var client = new HttpClient()) {
+                var responseMessage = await client.PostAsync(url,new StringContent(""));
+                if (responseMessage.StatusCode != HttpStatusCode.OK) {
+                    _logger.LogError("Failed to set asset status "+responseMessage.StatusCode);
+                    return false;
                 }
             }
+
+            return true;
+        }
+
+        private const string S3ClientAccessKey = "s3Client:AccessKey";
+        private const string S3ClientSecret = "s3Client:Secret";
+        private const string S3ClientServiceUrl = "s3Client:ServiceURL";
+
+        private IAmazonS3 GetS3Client() {
+            
+            IAmazonS3 s3Client = new AmazonS3Client(
+                _configuration.GetValue<string>(S3ClientAccessKey),
+                _configuration.GetValue<string>(S3ClientSecret),
+                new AmazonS3Config {
+                    ServiceURL = _configuration.GetValue<string>(S3ClientServiceUrl),
+                    UseHttp = true, 
+                    ForcePathStyle = true
+                }
+            );
+            _logger.LogInformation("Created new S3 Client");
+            return s3Client;
+        }
+
+
+        private async Task<bool> UploadDirectory(string file, OVEAssetModel asset) {
+            _logger.LogInformation("about to upload directory " + file);
+
+            using (var fileTransferUtility = new TransferUtility(GetS3Client())) {
+
+                // upload the .dzi file
+                var assetRootFolder = Path.GetDirectoryName(asset.StorageLocation);
+
+                var fileDirectory = Path.ChangeExtension(file, ".dzi").Replace(".dzi", "_files");
+
+                var filesKeyPrefix =
+                    assetRootFolder + "/" + new DirectoryInfo(fileDirectory).Name + "/"; // upload to the right folder
+
+                TransferUtilityUploadRequest req = new TransferUtilityUploadRequest() {
+                    BucketName = asset.Project,
+                    Key = Path.ChangeExtension(asset.StorageLocation, ".dzi"),
+                    FilePath = Path.ChangeExtension(file, ".dzi")
+
+                };
+                await fileTransferUtility.UploadAsync(req);
+
+                // upload the tile files 
+
+                TransferUtilityUploadDirectoryRequest request =
+                    new TransferUtilityUploadDirectoryRequest() {
+                        KeyPrefix = filesKeyPrefix,
+                        Directory = fileDirectory,
+                        BucketName = asset.Project,
+                        SearchOption = SearchOption.AllDirectories,
+                        SearchPattern = "*.*"
+                    };
+
+                await fileTransferUtility.UploadDirectoryAsync(request);
+
+                _logger.LogInformation("finished upload for "+file);
+
+                return true;
+            }
+        }
+
+        public string GetImagesBasePath() {
+            var rootDirectory = _configuration.GetValue<string>(WebHostDefaults.ContentRootKey);
+            var filepath = Path.Combine(rootDirectory, _configuration.GetValue<string>("ImageStorageConfig:BasePath"));
+            if (!Directory.Exists(filepath)) {
+                _logger.LogInformation("Creating directory for images " + filepath);
+                Directory.CreateDirectory(filepath);
+            }
+
+            Thread.Sleep(3000);
+
+            return filepath;
+        }
+
+        private string DownloadAsset(string url, OVEAssetModel asset) {
+            // make temp directory
+            // download url
+
+            string localFile = Path.Combine(GetImagesBasePath(), asset.StorageLocation);
+            Directory.CreateDirectory(Path.GetDirectoryName(localFile));
+
+            _logger.LogInformation("About to download to " + localFile);
+
+            using (var client = new WebClient()) {
+                client.DownloadFile(new Uri(url), localFile);
+            }
+
+            _logger.LogInformation("Finished downloading to " + localFile);
+
+            return localFile.Replace("/",Path.DirectorySeparatorChar.ToString()).Replace("\\",Path.DirectorySeparatorChar.ToString());
+        }
+
+        private async Task<string> GetAssetUri(OVEAssetModel asset) {
+            
+            string url = _configuration.GetValue<string>("AssetManagerHost") +
+                         _configuration.GetValue<string>("AssetUrlApi") +
+                         asset.Id;
+
+            using (var client = new HttpClient()) {
+                var responseMessage = await client.GetAsync(url);
+                if (responseMessage.StatusCode == HttpStatusCode.OK) {
+                    var assetString = await responseMessage.Content.ReadAsStringAsync();
+                    _logger.LogInformation("About to download asset from url "+assetString);
+                    return assetString;
+                }
+            }
+
+            throw new Exception("Failed to get download URL for asset");
+        }
+
+        private async Task<OVEAssetModel> FindAssetToProcess() {
+            OVEAssetModel todo = null;
+            string url = _configuration.GetValue<string>("AssetManagerHost") +
+                         _configuration.GetValue<string>("WorkItemApi") +
+                         _configuration.GetValue<string>("ServiceName") + ".json";
+
+            _logger.LogInformation("about to get work item from url " + url);
+
+            using (var client = new HttpClient()) {
+                var responseMessage = await client.GetAsync(url);
+
+                _logger.LogInformation("Response was " + responseMessage.StatusCode);
+                if (responseMessage.StatusCode == HttpStatusCode.OK) {
+                    var assetString = await responseMessage.Content.ReadAsStringAsync();
+                    todo = JsonConvert.DeserializeObject<OVEAssetModel>(assetString);
+                }
+            }
+
+            return todo;
         }
     }
 }

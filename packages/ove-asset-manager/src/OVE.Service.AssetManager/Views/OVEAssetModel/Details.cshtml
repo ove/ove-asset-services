@@ -74,5 +74,5 @@
     <a asp-action="Index">Back to List</a>
 </div>
 <div>
-    <iframe src="@{ Services.GetViewUrl(Model); }" onload="this.width=screen.width;this.height=50%" />
+    <iframe src="@Services.GetViewUrl(Model)" style="width: 100%; height:75%" />
 </div>

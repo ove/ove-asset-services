@@ -1,0 +1,13 @@
+﻿@model OVE.Service.ImageTiles.Models.ImageViewModel;
+
+@{
+    ViewData["Title"] = "Image View";
+}
+
+<div class="row">
+    <div class="col-md-3" style="width:100%">
+        <h2>Image @Model.Id</h2>
+        <a href="@Model.DziUrl">Download DZI File if Processed</a>
+        <img src="@Model.AssetUrl" style="width:100%" > 
+    </div>
+</div>
