@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OVE.Service.AssetManager.DbContexts;
@@ -29,6 +30,7 @@ namespace OVE.Service.AssetManager {
             return WebHost.CreateDefaultBuilder(args)               
                 .UseKestrel(c => c.AddServerHeader = false ) 
                 .UseContentRoot(configBasePath)
+                .ConfigureAppConfiguration((hostingContext, config) =>  config.AddJsonFile("appsettings.json").AddEnvironmentVariables())
                 .UseStartup<Startup>()
                 .ConfigureLogging((hostingContext, logging) => {
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
