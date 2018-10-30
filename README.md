@@ -40,14 +40,7 @@ Build and start runtime:
 
 ## Docker
 
-Alternatively, you can use docker:
-
-```sh
-docker build -t ove-services -f Dockerfile .
-docker run -d -p 8181-8190:8181-8190 --name ove-services ove-services
-```
-
-The services are now running in the port range of 8181 to 8190 on localhost.
+Alternatively, you can use docker. Each package has its own docker image, which can be build by executing the build script or docker-compose directly.
 
 ### Development
 
