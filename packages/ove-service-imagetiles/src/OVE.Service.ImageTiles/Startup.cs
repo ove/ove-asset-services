@@ -56,7 +56,11 @@ namespace OVE.Service.ImageTiles {
             services.AddTransient<ImageProcessor>();
 
             // use mvc
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddRazorPagesOptions( o=> {
+                    o.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
+            });
 
             // set up swagger
             services.AddSwaggerGen(options => {
