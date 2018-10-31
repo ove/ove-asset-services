@@ -35,12 +35,6 @@ namespace OVE.Service.AssetManager {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            services.Configure<CookiePolicyOptions>(options => {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
-
             //register a cors policy we can later configure to use
             services.AddCors(o => o.AddPolicy("AllowAll", builder => {
                 builder.AllowAnyOrigin()
@@ -64,6 +58,8 @@ namespace OVE.Service.AssetManager {
                 .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddXmlSerializerFormatters().AddJsonOptions(options => {
                     options.SerializerSettings.Formatting = Formatting.Indented;
+                }).AddRazorPagesOptions( o=> {
+                    o.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
                 });
 
             // add the db

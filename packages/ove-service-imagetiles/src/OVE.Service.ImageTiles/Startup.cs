@@ -35,12 +35,6 @@ namespace OVE.Service.ImageTiles {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            services.Configure<CookiePolicyOptions>(options => {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
-
             //register a cors policy we can later configure to use
             services.AddCors(o => o.AddPolicy("AllowAll", builder => {
                 builder.AllowAnyOrigin()
@@ -62,7 +56,11 @@ namespace OVE.Service.ImageTiles {
             services.AddTransient<ImageProcessor>();
 
             // use mvc
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddRazorPagesOptions( o=> {
+                    o.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
+            });
 
             // set up swagger
             services.AddSwaggerGen(options => {

@@ -1,0 +1,12 @@
+version: '3'
+services:
+  ovehub-ove-asset-manager:
+    image: ovehub/ove-asset-manager:${SERVICE_VERSION}
+    build: .
+    ports:
+    - "8085:80"
+    environment:
+      s3Client__AccessKey: ""
+      s3Client__Secret: ""
+      s3Client__ServiceURL: ""
+      ServiceHostUrl: ""
