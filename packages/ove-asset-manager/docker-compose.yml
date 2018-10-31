@@ -9,3 +9,4 @@ services:
       s3Client__AccessKey: ""
       s3Client__Secret: ""
       s3Client__ServiceURL: ""
+      ServiceHostUrl: ""

@@ -10,3 +10,4 @@ services:
       s3Client__Secret: ""
       s3Client__ServiceURL: ""
       AssetManagerHost: ""
+      ServiceHostUrl: ""
