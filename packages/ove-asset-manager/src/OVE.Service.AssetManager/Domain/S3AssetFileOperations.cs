@@ -101,7 +101,7 @@ namespace OVE.Service.AssetManager.Domain {
             _logger.LogInformation("about to upload "+asset);
 
             // set up the filename            
-            var ext = Path.GetExtension(upload.FileName).ToLower();
+            var ext = ValidateExtension(Path.GetExtension(upload.FileName).ToLower());
             asset.StorageLocation = Guid.NewGuid() +"/"+S3Sanitize(Path.GetFileNameWithoutExtension(upload.FileName),ext)+ext;
 
             try {
@@ -148,7 +148,22 @@ namespace OVE.Service.AssetManager.Domain {
         }
 
         /// <summary>
-        /// Sanitize the filename for s3
+        /// Sanitize the file extension of a file
+        /// files are not forced to have extensions though it is recommended
+        /// </summary>
+        /// <param name="input">input</param>
+        /// <returns>sanitized version</returns>
+        private string ValidateExtension(string input) {
+            // filter to valid chars 
+            Regex r = new Regex("^[a-zA-Z0-9]+$");
+            input = input.Where(l => r.IsMatch(l.ToString())).Aggregate("", (acc, c) => acc + c);
+
+            return "."+input;
+        }
+
+        /// <summary>
+        /// Safely Sanitize the filename for s3
+        /// Support multiple folders with / or \
         /// https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
         /// </summary>
         /// <param name="input">input file name</param>
@@ -156,11 +171,27 @@ namespace OVE.Service.AssetManager.Domain {
         /// <returns>sanitized version</returns>
         private string S3Sanitize(string input,string extension) {
             try {
-                input = input.Substring(0,Math.Min( input.Length, 63 - extension.Length)); // max permitted less file extension 
-                
+                if (string.IsNullOrWhiteSpace(input)) {
+                    throw new ArgumentNullException(nameof(input));
+                }
+
+                const int maxLength = 1024;// AWS limit
+                input = input.Substring(0,Math.Min( input.Length, maxLength - extension.Length)); 
+                // ensure that slashes face the right way 
+                input = input.Replace("\\", "/");
                 // filter to valid chars 
-                Regex r = new Regex("^[-a-zA-Z0-9_]+$");
+                Regex r = new Regex("^[-a-zA-Z0-9()_/]+$");
                 input = input.Where(l => r.IsMatch(l.ToString())).Aggregate("",(acc,c)=> acc+c);
+
+                //remove empty folders
+                while (input.Contains("//")) {
+                    input = input.Replace("//", "/");
+                }
+
+                // stop empty file names 
+                if (input.Length == 0) {
+                    throw new ArgumentNullException(nameof(input));
+                }
 
             }
             catch (Exception e) {
