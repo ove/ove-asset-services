@@ -158,7 +158,7 @@ namespace OVE.Service.AssetManager.Domain {
             Regex r = new Regex("^[a-zA-Z0-9]+$");
             input = input.Where(l => r.IsMatch(l.ToString())).Aggregate("", (acc, c) => acc + c);
 
-            return input;
+            return "."+input;
         }
 
         /// <summary>
