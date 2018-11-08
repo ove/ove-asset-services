@@ -171,7 +171,12 @@ namespace OVE.Service.AssetManager.Domain {
         /// <returns>sanitized version</returns>
         private string S3Sanitize(string input,string extension) {
             try {
-                input = input.Substring(0,Math.Min( input.Length, 63 - extension.Length)); // max permitted less file extension 
+                if (string.IsNullOrWhiteSpace(input)) {
+                    throw new ArgumentNullException(nameof(input));
+                }
+
+                const int maxLength = 1024;// AWS limit
+                input = input.Substring(0,Math.Min( input.Length, maxLength - extension.Length)); 
                 // ensure that slashes face the right way 
                 input = input.Replace("\\", "/");
                 // filter to valid chars 
