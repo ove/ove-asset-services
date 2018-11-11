@@ -106,7 +106,7 @@ namespace OVE.Service.ImageTiles {
 
             // register the service
 
-            string url = Configuration.GetValue<string>("AssetManagerHost") +
+            string url = Configuration.GetValue<string>("AssetManagerHostUrl") +
                          Configuration.GetValue<string>("RegistrationApi");
 
             Console.WriteLine("About to register with url " + url + " we are on " + service.ViewIFrameUrl);

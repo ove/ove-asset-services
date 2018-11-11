@@ -61,7 +61,7 @@ namespace OVE.Service.ImageTiles.Controllers {
         }
 
         private async Task<string> FindAssetById(string project, string name) {
-            string url = _configuration.GetValue<string>("AssetManagerHost") +
+            string url = _configuration.GetValue<string>("AssetManagerHostUrl") +
                          _configuration.GetValue<string>("GetAssetByProjectName") +
                          "?project=" + project + "&name=" + name;
 
@@ -104,7 +104,7 @@ namespace OVE.Service.ImageTiles.Controllers {
         }
 
         private async Task<ProcessingStates> GetAssetStatus(string id) {
-            string url = _configuration.GetValue<string>("AssetManagerHost") +
+            string url = _configuration.GetValue<string>("AssetManagerHostUrl") +
                          _configuration.GetValue<string>("GetAssetByIdApi") +
                          id + ".json";
 
@@ -128,7 +128,7 @@ namespace OVE.Service.ImageTiles.Controllers {
         }
 
         private async Task<string> GetAssetUrl(string id) {
-            string url = _configuration.GetValue<string>("AssetManagerHost") +
+            string url = _configuration.GetValue<string>("AssetManagerHostUrl") +
                          _configuration.GetValue<string>("AssetUrlApi") +
                          id;
 

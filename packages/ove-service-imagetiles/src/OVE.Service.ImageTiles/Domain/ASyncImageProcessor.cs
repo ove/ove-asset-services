@@ -115,7 +115,7 @@ namespace OVE.Service.ImageTiles.Domain {
 
         private async Task<bool> UpdateStatus(OVEAssetModel asset, ProcessingStates state, string errors = null) {
             
-            var url = _configuration.GetValue<string>("AssetManagerHost") +
+            var url = _configuration.GetValue<string>("AssetManagerHostUrl") +
                       _configuration.GetValue<string>("SetStateApi") +
                       asset.Id + "/" + (int) state;
 
@@ -227,7 +227,7 @@ namespace OVE.Service.ImageTiles.Domain {
 
         private async Task<string> GetAssetUri(OVEAssetModel asset) {
             
-            string url = _configuration.GetValue<string>("AssetManagerHost") +
+            string url = _configuration.GetValue<string>("AssetManagerHostUrl") +
                          _configuration.GetValue<string>("AssetUrlApi") +
                          asset.Id;
 
@@ -245,7 +245,7 @@ namespace OVE.Service.ImageTiles.Domain {
 
         private async Task<OVEAssetModel> FindAssetToProcess() {
             OVEAssetModel todo = null;
-            string url = _configuration.GetValue<string>("AssetManagerHost") +
+            string url = _configuration.GetValue<string>("AssetManagerHostUrl") +
                          _configuration.GetValue<string>("WorkItemApi") +
                          _configuration.GetValue<string>("ServiceName") + ".json";
 
