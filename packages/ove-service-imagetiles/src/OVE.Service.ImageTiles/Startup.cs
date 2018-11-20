@@ -96,7 +96,7 @@ namespace OVE.Service.ImageTiles {
             OVEService service = new OVEService();
             Configuration.Bind("Service", service);
             
-            service.ViewIFrameUrl = Configuration.GetValue<string>("ServiceHostUrl") + "/api/ImageController/ViewImage/?id={id}"; 
+            service.ViewIFrameUrl = Configuration.GetValue<string>("ServiceHostUrl").RemoveTrailingSlash() + "/api/ImageController/ViewImage/?id={id}"; 
 
             // update the real processing states
             service.ProcessingStates.Clear();
@@ -106,7 +106,7 @@ namespace OVE.Service.ImageTiles {
 
             // register the service
 
-            string url = Configuration.GetValue<string>("AssetManagerHostUrl") +
+            string url = Configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
                          Configuration.GetValue<string>("RegistrationApi");
 
             Console.WriteLine("About to register with url " + url + " we are on " + service.ViewIFrameUrl);
