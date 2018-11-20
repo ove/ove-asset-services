@@ -155,6 +155,7 @@ namespace OVE.Service.ImageTiles {
             app.UseSwagger()
                 .UseSwaggerUI(c => {
                     c.SwaggerEndpoint("/swagger/" + _version + "/swagger.json", "TileService " + _version);
+                    c.RoutePrefix = "api-docs";
                 });
         }
     }

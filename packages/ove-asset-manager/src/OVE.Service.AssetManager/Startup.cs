@@ -123,6 +123,7 @@ namespace OVE.Service.AssetManager {
             app.UseSwagger()
                 .UseSwaggerUI(c => {
                     c.SwaggerEndpoint("/swagger/" + _version + "/swagger.json", "Asset Service " + _version);
+                    c.RoutePrefix = "api-docs";
                 });
         }
     }
