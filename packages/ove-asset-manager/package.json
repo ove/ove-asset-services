@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "npx rimraf dist && npx rimraf src/OVE.Service.AssetManager/bin && npx rimraf src/OVE.Service.AssetManager/obj && npx rimraf AssetFiles.db",
+    "clean": "npx rimraf dist && npx rimraf src/OVE.Service.AssetManager/bin && npx rimraf src/OVE.Service.AssetManager/obj",
     "build": "dotnet restore src/OVE.Service.AssetManager && dotnet build src/OVE.Service.AssetManager && dotnet publish src/OVE.Service.AssetManager -o ../../dist",
     "build:alpine": "dotnet restore src/OVE.Service.AssetManager && dotnet build src/OVE.Service.AssetManager && dotnet publish src/OVE.Service.AssetManager -o ../../dist --runtime alpine.3.7-x64",
     "start": "dotnet dist/OVE.Service.AssetManager.dll --server.urls=http://0.0.0.0:${PORT-'8080'}"

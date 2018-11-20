@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.Data;
 using System.IO;
+using System.Threading;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -48,18 +50,30 @@ namespace OVE.Service.AssetManager {
         private static void ConfigureDatabase(IWebHost host) {
             using (var scope = host.Services.CreateScope()) {
                 var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
 
                 try {
-                    var context = services.GetRequiredService<AssetModelContext>();
+                    AssetModelContext context = services.GetRequiredService<AssetModelContext>();
+                    bool connected = false;
+                    while (!connected) {
+                        try {
+                            context = services.GetRequiredService<AssetModelContext>();
+                            context.Database.OpenConnection();
+                            connected = true;// if no exception throw
+                        }
+                        catch (Exception) {
+                            logger.LogWarning("Failed to open db connection - trying in 5sec ");
+                            Thread.Sleep(5000);
+                        }
+                    }
+                    
                     context.Database.Migrate();
                     AssetModelContext.Initialize(services);
-                }
-                catch (Exception ex) {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
+                } catch (Exception ex) {
+                    
                     logger.LogError(ex, "An error occurred seeding the DB.");
                 }
             }
-
         }
 
     }

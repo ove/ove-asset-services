@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OVE.Service.AssetManager.DbContexts;
 using OVE.Service.AssetManager.Domain;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace OVE.Service.AssetManager {
@@ -23,6 +22,9 @@ namespace OVE.Service.AssetManager {
 
         private IConfiguration Configuration { get; }
         private static string _version = "v1";
+        
+        private const string MariaDbConnectionString = "MariaDB:ConnectionString";
+        private const string MariaDbVersion = "MariaDB:Version";      
 
         internal static void GetVersionNumber() {
             // read version from package.json
@@ -63,7 +65,13 @@ namespace OVE.Service.AssetManager {
                 });
 
             // add the db
-            services.AddDbContext<AssetModelContext>(options => options.UseSqlite("Data Source=AssetFiles.db"));
+            services.AddDbContext<AssetModelContext>(
+                options => options.UseMySql(Configuration.GetValue<string>(MariaDbConnectionString),
+                    mysqlOptions => {
+                        mysqlOptions.ServerVersion(new Version(Configuration.GetValue<string>(MariaDbVersion)),
+                            ServerType.MariaDb); 
+                    }
+                ));
 
             // set up swagger
             services.AddSwaggerGen(options => {
