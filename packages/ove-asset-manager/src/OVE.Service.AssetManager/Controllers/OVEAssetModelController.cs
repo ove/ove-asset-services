@@ -315,7 +315,7 @@ namespace OVE.Service.AssetManager.Controllers {
         public async Task<IActionResult> Index() {
             return View(await _context.AssetModels.ToListAsync());
         }
-
+        
         /// <summary>
         /// Get Details of the asset by guid 
         /// assetModels/Details/5
@@ -356,7 +356,7 @@ namespace OVE.Service.AssetManager.Controllers {
         /// <param name="upload">the asset file to upload</param>
         /// <returns></returns>
         [HttpPost]
-        [DisableRequestSizeLimit]
+        //[DisableRequestSizeLimit] enabled by request
         [Route("/OVEAssetModelController/Create/{format?}")]
         public async Task<ActionResult<OVEAssetModel>> Create(
             [Bind("Project,Name,Description,Service,AssetMeta")] OVEAssetModel oveAssetModel,
