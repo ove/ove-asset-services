@@ -1,7 +1,7 @@
 version: '3'
 services:
   ovehub-ove-asset-db:
-    image: mariadb:10.3.10-bionic
+    image: mariadb:10.4.0-bionic
     ports:
     - "3306:3306"
     volumes:
@@ -24,7 +24,7 @@ services:
       s3Client__ServiceURL: ""
       ServiceHostUrl: ""
       MariaDB__ConnectionString: "Server=ovehub-ove-asset-db;Port=3306;Database=AssetDatabase;User=USER;Password=PASSWORD;"
-      MariaDB__Version: "10.3.10" 
+      MariaDB__Version: "10.4.0" 
 
   ovehub-ove-service-imagetiles:
     image: ovehub/ove-service-imagetiles:latest
