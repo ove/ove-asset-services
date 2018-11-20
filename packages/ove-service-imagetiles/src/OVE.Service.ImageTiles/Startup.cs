@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -91,38 +94,54 @@ namespace OVE.Service.ImageTiles {
         /// <summary>
         /// Register this OVE service with the Asset Manager Service 
         /// </summary>
-        /// <param name="app">kestrel app</param>
-        private async void RegisterServiceWithAssetManager(IApplicationBuilder app) {
+        private async void RegisterServiceWithAssetManager() {
+
+            // get the service description from the AppSettings.json 
             OVEService service = new OVEService();
             Configuration.Bind("Service", service);
-            
             service.ViewIFrameUrl = Configuration.GetValue<string>("ServiceHostUrl").RemoveTrailingSlash() + "/api/ImageController/ViewImage/?id={id}"; 
 
-            // update the real processing states
+            // then update the real processing states
             service.ProcessingStates.Clear();
             foreach (var state in Enum.GetValues(typeof(ProcessingStates))) {
                 service.ProcessingStates.Add(((int) state).ToString(), state.ToString());
             }
 
             // register the service
+          
+            bool registered = false;
+            while (!registered) {
+                string url = null;
+                try {
+                    // permit environmental variables to be updated 
+                    url = Configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
+                          Configuration.GetValue<string>("RegistrationApi");
 
-            string url = Configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
-                         Configuration.GetValue<string>("RegistrationApi");
+                    Console.WriteLine("About to register with url " + url + " we are on " + service.ViewIFrameUrl);
 
-            Console.WriteLine("About to register with url " + url + " we are on " + service.ViewIFrameUrl);
+                    using (var client = new HttpClient()) {
+                        var responseMessage = await client.PostAsJsonAsync(url, service);
 
-            using (var client = new HttpClient()) {
-                var responseMessage = await client.PostAsJsonAsync(url, service);
+                        Console.WriteLine("Result of Registration was " + responseMessage.StatusCode);
 
-                Console.WriteLine("Result of Registration was " + responseMessage.StatusCode);
+                        registered = responseMessage.StatusCode == HttpStatusCode.OK;
+                    }
+                } catch (Exception e) {
+                    Console.WriteLine("Failed to register - exception was" + e);
+                    registered = false;
+                }
+
+                if (!registered) {
+                    Console.WriteLine($"Failed to register with an Asset Manager on {url}- trying again soon");
+                    Thread.Sleep(10000);
+                }
             }
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
 
-            RegisterServiceWithAssetManager(app);
+            RegisterServiceWithAssetManager();
 
             // error pages
             if (env.IsDevelopment()) {
@@ -132,9 +151,8 @@ namespace OVE.Service.ImageTiles {
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            //enable serving all file types (e.g. .dzi)
+            //set default content type
             app.UseStaticFiles(new StaticFileOptions {
-                ServeUnknownFileTypes = true,
                 DefaultContentType = "application/json"
             });
 

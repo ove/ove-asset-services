@@ -108,10 +108,9 @@ namespace OVE.Service.AssetManager {
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            //enable serving all file types (e.g. .dzi)
+            //set default content type
             app.UseStaticFiles(new StaticFileOptions {
-                ServeUnknownFileTypes = true,
-                DefaultContentType = "application/json"
+               DefaultContentType = "application/json"
             });
 
             // may not need
