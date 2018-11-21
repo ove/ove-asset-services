@@ -199,10 +199,11 @@ namespace OVE.Service.ImageTiles.Domain {
             if (!Directory.Exists(filepath)) {
                 _logger.LogInformation("Creating directory for images " + filepath);
                 Directory.CreateDirectory(filepath);
+
+                // wait for new folder to be writable
+                Thread.Sleep(3000);
             }
-
-            Thread.Sleep(3000);
-
+            
             return filepath;
         }
 
@@ -221,7 +222,7 @@ namespace OVE.Service.ImageTiles.Domain {
 
             _logger.LogInformation("Finished downloading to " + localFile);
 
-            return localFile.Replace("/",Path.DirectorySeparatorChar.ToString()).Replace("\\",Path.DirectorySeparatorChar.ToString());
+            return localFile.Replace('/',Path.DirectorySeparatorChar).Replace('\\',Path.DirectorySeparatorChar);
         }
 
         private async Task<string> GetAssetUri(OVEAssetModel asset) {
