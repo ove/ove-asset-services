@@ -1,14 +1,14 @@
 {
   "apps": [
-   {
+    {
       "name": "@ove/ove-asset-manager",
       "cwd": "./packages/ove-asset-manager",
       "kill_timeout": 3000,
       "restart_delay": 3000,
       "script": "dotnet",
-      "args": "dist/OVE.Service.AssetManager.dll --server.urls=http://0.0.0.0:8181",
+      "args": "dist/OVE.Service.AssetManager.dll",
       "env": {
-          "PORT": "8181"
+        "ASPNETCORE_URLS": "http://*:8181"
       }
     },
     {
@@ -17,9 +17,9 @@
       "kill_timeout": 3000,
       "restart_delay": 3000,
       "script": "dotnet",
-      "args": "dist/OVE.Service.ImageTiles.dll --server.urls=http://0.0.0.0:8182",
+      "args": "dist/OVE.Service.ImageTiles.dll",
       "env": {
-          "PORT": "8182"
+        "ASPNETCORE_URLS": "http://*:8182"
       }
     }
   ]

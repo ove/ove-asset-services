@@ -8,7 +8,7 @@
       "script": "npm",
       "args": "run start",
       "env": {
-          "PORT": "8080"
+        "ASPNETCORE_URLS": "http://*:8181"
       }
     }
   ]

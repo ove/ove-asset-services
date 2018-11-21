@@ -8,9 +8,10 @@
       "script": "npm",
       "args": "run start",
       "env": {
-          "PORT": "8181"
+        "ASPNETCORE_URLS": "http://*:8181"
       }
-    },{
+    },
+    {
       "name": "@ove/ove-service-imagetiles",
       "cwd": "./packages/ove-service-imagetiles",
       "kill_timeout": 3000,
@@ -18,7 +19,7 @@
       "script": "npm",
       "args": "run start",
       "env": {
-          "PORT": "8182"
+        "ASPNETCORE_URLS": "http://*:8182"
       }
     }
   ]
