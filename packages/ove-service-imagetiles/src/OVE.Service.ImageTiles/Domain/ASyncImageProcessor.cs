@@ -208,7 +208,12 @@ namespace OVE.Service.ImageTiles.Domain {
             // download url
 
             string localFile = Path.Combine(GetImagesBasePath(), asset.StorageLocation);
-            Directory.CreateDirectory(Path.GetDirectoryName(localFile));
+            var directory = Path.GetDirectoryName(localFile);
+            // clean up and create a local directory to work with
+            if (Directory.Exists(directory)) {
+                Directory.Delete(directory,true);
+            }
+            Directory.CreateDirectory(directory);
 
             _logger.LogInformation("About to download to " + localFile);
 

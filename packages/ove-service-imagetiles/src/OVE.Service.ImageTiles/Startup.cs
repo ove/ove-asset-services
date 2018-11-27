@@ -14,13 +14,17 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OVE.Service.ImageTiles.Domain;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace OVE.Service.ImageTiles {
     public class Startup {
-        public Startup(IConfiguration configuration) {
+        private readonly ILogger<Startup> _logger;
+
+        public Startup(IConfiguration configuration,ILogger<Startup> logger) {
+            _logger = logger;
             Configuration = configuration;
         }
 
@@ -117,22 +121,22 @@ namespace OVE.Service.ImageTiles {
                     url = Configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
                           Configuration.GetValue<string>("RegistrationApi");
 
-                    Console.WriteLine("About to register with url " + url + " we are on " + service.ViewIFrameUrl);
+                    _logger.LogInformation($"About to register with url {url} we are on {service.ViewIFrameUrl}");
 
                     using (var client = new HttpClient()) {
                         var responseMessage = await client.PostAsJsonAsync(url, service);
 
-                        Console.WriteLine("Result of Registration was " + responseMessage.StatusCode);
+                        _logger.LogInformation($"Result of Registration was {responseMessage.StatusCode}");
 
                         registered = responseMessage.StatusCode == HttpStatusCode.OK;
                     }
                 } catch (Exception e) {
-                    Console.WriteLine("Failed to register - exception was" + e);
+                    _logger.LogWarning($"Failed to register - exception was {e}");
                     registered = false;
                 }
 
                 if (!registered) {
-                    Console.WriteLine($"Failed to register with an Asset Manager on {url}- trying again soon");
+                    _logger.LogWarning($"Failed to register with an Asset Manager on {url}- trying again soon");
                     Thread.Sleep(10000);
                 }
             }
@@ -140,6 +144,7 @@ namespace OVE.Service.ImageTiles {
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+            _logger.LogInformation("about to start Dependency Injection");
 
             RegisterServiceWithAssetManager();
 
