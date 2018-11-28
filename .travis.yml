@@ -1,0 +1,21 @@
+sudo: false
+language: node_js
+node_js: stable
+
+services:
+  - docker
+
+install: echo
+
+stages:
+  - test
+  - name: deploy
+    if: branch = master AND type != pull_request
+
+jobs:
+  include:
+    - stage: test
+      # real unit testing + integration has to be done next but for now we test only if the build fails
+      script: .travis/build-all.sh
+    - stage: deploy
+      script: .travis/build-all-push.sh
