@@ -6,7 +6,7 @@ using System.Linq;
 // ReSharper disable MemberCanBePrivate.Global << needed by EntityFramework
 // ReSharper disable UnusedMember.Global
 
-namespace OVE.Service.AssetManager.Models {
+namespace OVE.Service.Core.Assets {
     /// <summary>
     /// Asset file model to represent OVE assets 
     /// </summary>

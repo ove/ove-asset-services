@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OVE.Service.ImageTiles.Domain {
+namespace OVE.Service.Core.Services {
     /// <summary>
     /// Metadata about OVE Services registered with the Asset Manager 
     /// </summary>

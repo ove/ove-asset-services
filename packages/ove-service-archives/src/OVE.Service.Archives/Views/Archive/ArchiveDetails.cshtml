@@ -1,0 +1,22 @@
+﻿@model OVE.Service.Archives.Models.ArchiveViewModel
+@using Newtonsoft.Json
+
+@{
+    ViewData["Title"] = "Archive Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Archive Details</h4>
+    <h3>Download Zip <a href="@Model.AssetUrl">Here</a></h3>
+    <hr />
+        <ol>
+            @foreach (var file in Model.Files){
+               var url = Model.AssetUrl.Replace(Model.RootFile,file); 
+               <li>
+                   <a href="@url">@file</a>
+               </li>
+            }
+        </ol>>
+</div>

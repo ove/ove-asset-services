@@ -1,0 +1,16 @@
+{
+  "name": "@ove/ove-service-archives",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "npx rimraf dist && npx rimraf src/OVE.Service.Archives/bin && npx rimraf src/OVE.Service.Archives/obj",
+    "build": "dotnet restore src/OVE.Service.Archives && dotnet build src/OVE.Service.Archives && dotnet publish src/OVE.Service.Archives -o ../../dist",
+    "build:alpine": "dotnet restore src/OVE.Service.Archives && dotnet build src/OVE.Service.Archives && dotnet publish src/OVE.Service.Archives -o ../../dist --runtime alpine.3.7-x64",
+    "start": "dotnet dist/OVE.Service.Archives.dll"
+  },
+  "keywords": [],
+  "author": "David Birch <david.birch@imperial.ac.uk>",
+  "license": "MIT",
+  "dependencies": {}
+}

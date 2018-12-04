@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2019
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVE.Service.Core", "packages\ove-asset-core\src\OVE.Service.Core\OVE.Service.Core.csproj", "{60337557-4CFC-4AED-9427-4EFF27507605}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVE.Service.AssetManager", "packages\ove-asset-manager\src\OVE.Service.AssetManager\OVE.Service.AssetManager.csproj", "{9A087BB8-1EC8-4A20-9D25-60B86D4C628C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVE.Service.Archives", "packages\ove-service-archives\src\OVE.Service.Archives\OVE.Service.Archives.csproj", "{7C2CC340-374A-4DA9-931F-D3A7ED1176A4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVE.Service.ImageTiles", "packages\ove-service-imagetiles\src\OVE.Service.ImageTiles\OVE.Service.ImageTiles.csproj", "{6DE2F488-5E0B-4E4A-8695-06700DCC04F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{60337557-4CFC-4AED-9427-4EFF27507605}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60337557-4CFC-4AED-9427-4EFF27507605}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60337557-4CFC-4AED-9427-4EFF27507605}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60337557-4CFC-4AED-9427-4EFF27507605}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A087BB8-1EC8-4A20-9D25-60B86D4C628C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A087BB8-1EC8-4A20-9D25-60B86D4C628C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A087BB8-1EC8-4A20-9D25-60B86D4C628C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A087BB8-1EC8-4A20-9D25-60B86D4C628C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C2CC340-374A-4DA9-931F-D3A7ED1176A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C2CC340-374A-4DA9-931F-D3A7ED1176A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C2CC340-374A-4DA9-931F-D3A7ED1176A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C2CC340-374A-4DA9-931F-D3A7ED1176A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE2F488-5E0B-4E4A-8695-06700DCC04F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE2F488-5E0B-4E4A-8695-06700DCC04F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE2F488-5E0B-4E4A-8695-06700DCC04F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE2F488-5E0B-4E4A-8695-06700DCC04F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A7CE9C6-FC98-4DEE-8B2B-1C8FC04B4CC6}
+	EndGlobalSection
+EndGlobal

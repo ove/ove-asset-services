@@ -11,15 +11,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\ImageStore\**" />
+    <Content Remove="wwwroot\ImageStore\**" />
+    <EmbeddedResource Remove="wwwroot\ImageStore\**" />
+    <None Remove="wwwroot\ImageStore\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\..\package.json" Link="package.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.27.1" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.30" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" />
     <PackageReference Include="NetVips" Version="1.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
@@ -27,8 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Database\" />
-    <Folder Include="wwwroot\ImageStore\" />
+    <ProjectReference Include="..\..\..\ove-asset-core\src\OVE.Service.Core\OVE.Service.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +46,10 @@
     <None Update="OVE.Service.ImageTiles.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\AssetStore\" />
   </ItemGroup>
 
 </Project>

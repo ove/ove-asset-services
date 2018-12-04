@@ -1,4 +1,4 @@
-﻿@model OVE.Service.AssetManager.Models.OVEAssetModel
+﻿@model OVE.Service.Core.Assets.OVEAssetModel
 @using OVE.Service.AssetManager.Domain
 @inject ServiceRepository Services
 
@@ -74,5 +74,5 @@
     <a asp-action="Index">Back to List</a>
 </div>
 <div>
-    <iframe src="@Services.GetViewUrl(Model)" style="width: 100%; height:75%" />
+    <iframe src="@Services.GetViewUrl(Model)" style="width: 100%; height: 1000px; border-width: 0px" />
 </div>

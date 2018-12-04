@@ -1,5 +1,4 @@
 FROM node:10-stretch as builder
-WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install apt-transport-https
 
@@ -21,7 +20,10 @@ RUN npm install -global npx
 RUN npm install -global pm2
 
 # Bundle app source
-COPY . .
+WORKDIR /usr/src
+COPY ove-asset-core ove-asset-core
+COPY ove-asset-manager ove-asset-manager
+WORKDIR /usr/src/ove-asset-manager
 
 RUN npm install
 
@@ -30,17 +32,15 @@ RUN npm run clean && npm run build:alpine
 
 # The optimized docker image
 FROM microsoft/dotnet:2.1-runtime-alpine
-WORKDIR /usr/src/app
+WORKDIR /usr/src/ove-asset-manager
 
 RUN apk add --no-cache nodejs nodejs-npm
 
 RUN npm install -global pm2
 
-COPY --from=builder /usr/src/app/dist/ ./dist/
-COPY --from=builder /usr/src/app/pm2.json .
-COPY --from=builder /usr/src/app/package.json .
-
-EXPOSE 80
+COPY --from=builder /usr/src/ove-asset-manager/dist/ ./dist/
+COPY --from=builder /usr/src/ove-asset-manager/pm2.json .
+COPY --from=builder /usr/src/ove-asset-manager/package.json .
 
 CMD [ "pm2-runtime", "pm2.json" ]
 

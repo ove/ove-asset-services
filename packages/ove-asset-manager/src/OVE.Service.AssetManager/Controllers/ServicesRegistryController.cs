@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OVE.Service.AssetManager.Domain;
+using OVE.Service.Core.Services;
 
 namespace OVE.Service.AssetManager.Controllers
 {

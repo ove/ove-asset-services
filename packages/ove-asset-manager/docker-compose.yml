@@ -2,11 +2,12 @@ version: '3'
 services:
   ovehub-ove-asset-manager:
     image: ovehub/ove-asset-manager:${SERVICE_VERSION}
-    build: .
+    build: 
+      context: ../
+      dockerfile: ove-asset-manager/Dockerfile
     ports:
     - "8181:8181"
     environment:
       s3Client__AccessKey: ""
       s3Client__Secret: ""
       s3Client__ServiceURL: ""
-      ServiceHostUrl: ""

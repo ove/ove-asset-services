@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2019
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVE.Service.ImageTiles", "OVE.Service.ImageTiles.csproj", "{4D9F7EDA-1F2A-4BA2-9E04-E3DB0F3240A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OVE.Service.Core", "..\..\..\ove-asset-core\src\OVE.Service.Core\OVE.Service.Core.csproj", "{C7BAA5CE-C03E-429B-9B10-D5BC0748531B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

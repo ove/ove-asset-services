@@ -21,6 +21,17 @@
       "env": {
         "ASPNETCORE_URLS": "http://*:8182"
       }
+    },
+    {
+      "name": "@ove/ove-service-archives",
+      "cwd": "./packages/ove-service-archives",
+      "kill_timeout": 3000,
+      "restart_delay": 3000,
+      "script": "npm",
+      "args": "run start",
+      "env": {
+        "ASPNETCORE_URLS": "http://*:8183"
+      }
     }
   ]
 }

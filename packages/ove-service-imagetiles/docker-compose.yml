@@ -2,7 +2,9 @@ version: '3'
 services:
   ovehub-ove-service-imagetiles:
     image: ovehub/ove-service-imagetiles:${SERVICE_VERSION}
-    build: .
+    build: 
+      context: ../
+      dockerfile: ove-service-imagetiles/Dockerfile
     ports:
     - "8182:8182"
     environment:

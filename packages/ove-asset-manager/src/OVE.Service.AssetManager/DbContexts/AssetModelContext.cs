@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using OVE.Service.AssetManager.Models;
+using OVE.Service.Core.Assets;
 
 namespace OVE.Service.AssetManager.DbContexts {
     public class AssetModelContext : DbContext {

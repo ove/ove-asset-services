@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OVE.Service.Core.FileOperations;
+using OVE.Service.Core.FileOperations.S3;
+using OVE.Service.Core.Processing.Service;
+using OVE.Service.Core.Services;
 using OVE.Service.ImageTiles.Domain;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -33,9 +29,9 @@ namespace OVE.Service.ImageTiles {
 
         internal static void GetVersionNumber() {
             // read version from package.json
-            var packagejson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"package.json");
-            if (File.Exists(packagejson)) {
-                var package = JObject.Parse(File.ReadAllText(packagejson));
+            var packageJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"package.json");
+            if (File.Exists(packageJson)) {
+                var package = JObject.Parse(File.ReadAllText(packageJson));
                 _version = package["version"].ToString();
             }
         }
@@ -55,12 +51,13 @@ namespace OVE.Service.ImageTiles {
                 x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
             });
 
-            //start the processor microservice 
-            services.AddHostedService<ASyncImageProcessor>();
-
             // dependency injection of domain classes 
             services.AddSingleton(Configuration);
             services.AddTransient<ImageProcessor>();
+            services.AddTransient<IAssetFileOperations, S3AssetFileOperations>();
+
+            //start the processor microservice 
+            services.AddHostedService<AssetProcessingService<ImageProcessor,ImageProcessingStates>>();
 
             // use mvc
             services.AddMvc()
@@ -95,58 +92,11 @@ namespace OVE.Service.ImageTiles {
 
         }
 
-        /// <summary>
-        /// Register this OVE service with the Asset Manager Service 
-        /// </summary>
-        private async void RegisterServiceWithAssetManager() {
-
-            // get the service description from the AppSettings.json 
-            OVEService service = new OVEService();
-            Configuration.Bind("Service", service);
-            service.ViewIFrameUrl = Configuration.GetValue<string>("ServiceHostUrl").RemoveTrailingSlash() + "/api/ImageController/ViewImage/?id={id}"; 
-
-            // then update the real processing states
-            service.ProcessingStates.Clear();
-            foreach (var state in Enum.GetValues(typeof(ProcessingStates))) {
-                service.ProcessingStates.Add(((int) state).ToString(), state.ToString());
-            }
-
-            // register the service
-          
-            bool registered = false;
-            while (!registered) {
-                string url = null;
-                try {
-                    // permit environmental variables to be updated 
-                    url = Configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
-                          Configuration.GetValue<string>("RegistrationApi");
-
-                    _logger.LogInformation($"About to register with url {url} we are on {service.ViewIFrameUrl}");
-
-                    using (var client = new HttpClient()) {
-                        var responseMessage = await client.PostAsJsonAsync(url, service);
-
-                        _logger.LogInformation($"Result of Registration was {responseMessage.StatusCode}");
-
-                        registered = responseMessage.StatusCode == HttpStatusCode.OK;
-                    }
-                } catch (Exception e) {
-                    _logger.LogWarning($"Failed to register - exception was {e}");
-                    registered = false;
-                }
-
-                if (!registered) {
-                    _logger.LogWarning($"Failed to register with an Asset Manager on {url}- trying again soon");
-                    Thread.Sleep(10000);
-                }
-            }
-        }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
             _logger.LogInformation("about to start Dependency Injection");
 
-            RegisterServiceWithAssetManager();
+            RegisterService.WithAssetManager(Enum.GetValues(typeof(ImageProcessingStates)), Configuration, _logger, "/api/ImageController/ViewImage/?id={id}");
 
             // error pages
             if (env.IsDevelopment()) {

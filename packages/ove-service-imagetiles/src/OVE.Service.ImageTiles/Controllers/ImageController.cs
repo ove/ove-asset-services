@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OVE.Service.Core.Extensions;
 using OVE.Service.ImageTiles.Domain;
 using OVE.Service.ImageTiles.Models;
 
@@ -62,7 +63,7 @@ namespace OVE.Service.ImageTiles.Controllers {
 
         private async Task<string> FindAssetById(string project, string name) {
             string url = _configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
-                         _configuration.GetValue<string>("GetAssetByProjectName") +
+                         _configuration.GetValue<string>("GetAssetByProjectNameApi") +
                          "?project=" + project + "&name=" + name;
 
             _logger.LogInformation("about to get on " + url);
@@ -89,7 +90,7 @@ namespace OVE.Service.ImageTiles.Controllers {
         [Route("/api/ImageController/GetDZIFile/{id}")]
         public async Task<ActionResult<string>> GetDZIbyId(string id) {
 
-            if ((await GetAssetStatus(id)) != ProcessingStates.Processed) {
+            if ((await GetAssetStatus(id)) != ImageProcessingStates.Processed) {
                 return NoContent();
             }
 
@@ -103,7 +104,7 @@ namespace OVE.Service.ImageTiles.Controllers {
             return dzi;
         }
 
-        private async Task<ProcessingStates> GetAssetStatus(string id) {
+        private async Task<ImageProcessingStates> GetAssetStatus(string id) {
             string url = _configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
                          _configuration.GetValue<string>("GetAssetByIdApi") +
                          id + ".json";
@@ -117,14 +118,14 @@ namespace OVE.Service.ImageTiles.Controllers {
                     if (!string.IsNullOrWhiteSpace(assetString)) {
                         var asset = JObject.Parse(assetString);
                         string state = asset["processingState"].ToString();
-                        if (Enum.TryParse(state, out ProcessingStates assetState)) {
+                        if (Enum.TryParse(state, out ImageProcessingStates assetState)) {
                             return assetState;
                         }
                     }
                 }
             }
 
-            return ProcessingStates.Error;
+            return ImageProcessingStates.Error;
         }
 
         private async Task<string> GetAssetUrl(string id) {

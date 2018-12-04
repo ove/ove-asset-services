@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2019
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVE.Service.AssetManager", "OVE.Service.AssetManager.csproj", "{4D9F7EDA-1F2A-4BA2-9E04-E3DB0F3240A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OVE.Service.Core", "..\..\..\ove-asset-core\src\OVE.Service.Core\OVE.Service.Core.csproj", "{C7BAA5CE-C03E-429B-9B10-D5BC0748531B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,18 @@ Global
 		{4D9F7EDA-1F2A-4BA2-9E04-E3DB0F3240A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D9F7EDA-1F2A-4BA2-9E04-E3DB0F3240A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D9F7EDA-1F2A-4BA2-9E04-E3DB0F3240A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35B092FB-0C00-486E-8E08-8F3DB59D1F6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35B092FB-0C00-486E-8E08-8F3DB59D1F6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35B092FB-0C00-486E-8E08-8F3DB59D1F6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35B092FB-0C00-486E-8E08-8F3DB59D1F6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC2BAF1E-7F80-4631-A444-DDC229898E70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC2BAF1E-7F80-4631-A444-DDC229898E70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC2BAF1E-7F80-4631-A444-DDC229898E70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC2BAF1E-7F80-4631-A444-DDC229898E70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7BAA5CE-C03E-429B-9B10-D5BC0748531B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7BAA5CE-C03E-429B-9B10-D5BC0748531B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7BAA5CE-C03E-429B-9B10-D5BC0748531B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7BAA5CE-C03E-429B-9B10-D5BC0748531B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OVE.Service.AssetManager.Models;
+using OVE.Service.Core.Assets;
+using OVE.Service.Core.Services;
 
 namespace OVE.Service.AssetManager.Domain {
     /// <summary>

@@ -1,5 +1,4 @@
 FROM node:10-stretch as builder
-WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install apt-transport-https
 
@@ -20,7 +19,10 @@ RUN npm install -global npx
 RUN npm install -global pm2
 
 # Bundle app source
-COPY . .
+WORKDIR /usr/src
+COPY ove-asset-core ove-asset-core
+COPY ove-service-imagetiles ove-service-imagetiles
+WORKDIR /usr/src/ove-service-imagetiles
 
 RUN npm install
 
@@ -29,7 +31,7 @@ RUN npm run clean && npm run build
 
 # The optimized docker image
 FROM microsoft/dotnet:2.1-aspnetcore-runtime
-WORKDIR /usr/src/app
+WORKDIR /usr/src/ove-service-imagetiles
 
 RUN apt-get update && apt-get install -y gnupg
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
@@ -42,11 +44,9 @@ RUN npm install -global pm2
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update && apt-get install -y libvips
 
-COPY --from=builder /usr/src/app/dist/ ./dist/
-COPY --from=builder /usr/src/app/pm2.json .
-COPY --from=builder /usr/src/app/package.json .
-
-EXPOSE 80
+COPY --from=builder /usr/src/ove-service-imagetiles/dist/ ./dist/
+COPY --from=builder /usr/src/ove-service-imagetiles/pm2.json .
+COPY --from=builder /usr/src/ove-service-imagetiles/package.json .
 
 CMD [ "pm2-runtime", "pm2.json" ]
 

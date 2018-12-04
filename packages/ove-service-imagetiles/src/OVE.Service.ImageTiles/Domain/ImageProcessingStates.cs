@@ -1,6 +1,6 @@
 ﻿namespace OVE.Service.ImageTiles.Domain {
 
-    public enum ProcessingStates {
+    public enum ImageProcessingStates {
         Error = -1,
         Unprocessed = 0,
         Processing = 1,

@@ -1,0 +1,15 @@
+version: '3'
+services:
+  ovehub-ove-service-archives:
+    image: ovehub/ove-service-archives:${SERVICE_VERSION}
+    build: 
+      context: ../
+      dockerfile: ove-service-archives/Dockerfile
+    ports:
+    - "8183:8183"
+    environment:
+      s3Client__AccessKey: ""
+      s3Client__Secret: ""
+      s3Client__ServiceURL: ""
+      AssetManagerHostUrl: ""
+      ServiceHostUrl: ""

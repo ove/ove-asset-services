@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <UseGlobalLibvips>true</UseGlobalLibvips>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -11,33 +10,37 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\AssetStore\**" />
+    <Content Remove="wwwroot\AssetStore\**" />
+    <EmbeddedResource Remove="wwwroot\AssetStore\**" />
+    <None Remove="wwwroot\AssetStore\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\..\package.json" Link="package.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.27.1" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.30" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
-	  <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\AssetStore\" />
     <Folder Include="wwwroot\Database\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Views\Archive\ArchiveDetails.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
+    <ProjectReference Include="..\..\..\ove-asset-core\src\OVE.Service.Core\OVE.Service.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="OVE.Service.ImageTiles.xml">
+    <None Update="OVE.Service.Archive.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

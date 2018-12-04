@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OVE.Service.AssetManager.DbContexts;
 using OVE.Service.AssetManager.Domain;
-using OVE.Service.AssetManager.Models;
+using OVE.Service.Core.Assets;
+using OVE.Service.Core.FileOperations;
 
 namespace OVE.Service.AssetManager.Controllers {
 
@@ -53,6 +54,9 @@ namespace OVE.Service.AssetManager.Controllers {
         public async Task<ActionResult<OVEAssetModel>> GetWorkItem(string service) {
             var oveService = _serviceRepository.GetService(service);
             try {
+                if (_context.AssetModels == null) {
+                    return NoContent();
+                }
 
                 var todo = await _context.AssetModels.FirstOrDefaultAsync(a =>a.Service ==oveService.Name && a.ProcessingState == 0);
 
@@ -139,13 +143,16 @@ namespace OVE.Service.AssetManager.Controllers {
 
         /// <summary>
         /// Update the metadata of an asset.
+        /// please use text/plain content type
         /// </summary>
         /// <param name="id">id of the asset</param>
-        /// <param name="meta">some meta data</param>
+        /// <param name="meta">some meta data - this should be in the body of the post</param>
         /// <returns>the ove Asset which has been updated</returns>
         [HttpPost]
         [Route("/OVEAssetModelController/AssetMeta/{id}.{format?}")]
         public async Task<ActionResult<OVEAssetModel>> UpdateAssetMeta(string id,[FromBody] string meta) {
+            _logger.LogInformation($"updating meta for {id} to {meta}");
+            
             if (id == null) {
                 return NotFound();
             }
@@ -154,7 +161,7 @@ namespace OVE.Service.AssetManager.Controllers {
             if (assetModel == null) {
                 return NotFound();
             }
-
+           
             assetModel.AssetMeta = meta;
 
             _context.Update(assetModel);
