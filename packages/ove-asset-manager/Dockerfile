@@ -13,7 +13,7 @@ RUN chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg
 RUN chown root:root /etc/apt/sources.list.d/microsoft-prod.list
 
 
-RUN export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true && apt-get update && apt-get install -y dotnet-sdk-2.1
+RUN export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true && apt-get update && apt-get install -y dotnet-sdk-2.2
 
 # install dependencies with npm
 RUN npm install -global npx
@@ -31,7 +31,7 @@ RUN npm install
 RUN npm run clean && npm run build:alpine
 
 # The optimized docker image
-FROM microsoft/dotnet:2.1-runtime-alpine
+FROM microsoft/dotnet:2.2-runtime-alpine
 WORKDIR /usr/src/ove-asset-manager
 
 RUN apk add --no-cache nodejs nodejs-npm
