@@ -69,7 +69,7 @@ namespace OVE.Service.AssetManager {
             services.AddMvc(options => {
                     options.InputFormatters.Insert(0, new RawRequestBodyFormatter());
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest)
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddXmlSerializerFormatters().AddJsonOptions(options => {
                     options.SerializerSettings.Formatting = Formatting.Indented;
                 }).AddRazorPagesOptions( o=> {
