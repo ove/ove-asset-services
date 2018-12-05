@@ -1,0 +1,15 @@
+version: '3'
+services:
+  ovehub-ove-service-networktiles:
+    image: ovehub/ove-service-networktiles:${SERVICE_VERSION}
+    build: 
+      context: ../
+      dockerfile: ove-service-networktiles/Dockerfile
+    ports:
+    - "8184:8184"
+    environment:
+      s3Client__AccessKey: ""
+      s3Client__Secret: ""
+      s3Client__ServiceURL: ""
+      AssetManagerHostUrl: ""
+      ServiceHostUrl: ""

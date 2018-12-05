@@ -32,6 +32,17 @@
       "env": {
         "ASPNETCORE_URLS": "http://*:8183"
       }
+    },
+    {
+      "name": "@ove/ove-service-networktiles",
+      "cwd": "./packages/ove-service-networktiles",
+      "kill_timeout": 3000,
+      "restart_delay": 3000,
+      "script": "npm",
+      "args": "run start",
+      "env": {
+        "ASPNETCORE_URLS": "http://*:8184"
+      }
     }
   ]
 }

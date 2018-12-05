@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "name": "@ove/ove-service-networktiles",
+      "cwd": ".",
+      "kill_timeout": 3000,
+      "restart_delay": 3000,
+      "script": "npm",
+      "args": "run start",
+      "env": {
+        "ASPNETCORE_URLS": "http://*:8184"
+      }
+    }
+  ]
+}
