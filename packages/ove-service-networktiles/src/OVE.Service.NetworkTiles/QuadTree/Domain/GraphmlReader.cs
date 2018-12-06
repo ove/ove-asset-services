@@ -156,8 +156,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             this._minY = nodesById.Min(n => n.Value.Pos.Y);
             this._maxX = nodesById.Max(n => n.Value.Pos.X);
             this._maxY = nodesById.Max(n => n.Value.Pos.Y);
-            Console.WriteLine("x = " + this._minX + " > " + this._maxX);
-            Console.WriteLine("y = " + this._minY + " > " + this._maxY);
+            _logger.LogInformation("x = " + this._minX + " > " + this._maxX);
+            _logger.LogInformation("y = " + this._minY + " > " + this._maxY);
 
             GraphInfo.RectDim = new RectDimension {
                 Width = _maxX - _minX,
@@ -167,8 +167,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             this._xScale = this._objectiveWidth / this.GraphInfo.RectDim.Width; // 16*16  > 16*2
             this._yScale = this._objectiveHeight / this.GraphInfo.RectDim.Height; // 9*4
 
-            Console.WriteLine("x Scale = " + this._xScale);
-            Console.WriteLine("y Scale = " + this._yScale);
+            _logger.LogInformation("x Scale = " + this._xScale);
+            _logger.LogInformation("y Scale = " + this._yScale);
 
             //rescale nodes...
             foreach (var node in nodesById.Values) {
@@ -185,7 +185,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
                 Width = newXMax - newXMin,
                 Height = newYMax - newYMin
             };
-            Console.WriteLine("writing");
+            _logger.LogInformation("writing new graph");
 
             #endregion
 
@@ -219,7 +219,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             #endregion
 
             sw.Stop();
-            Debug.WriteLine("Time to read the Graphml file: " + sw.ElapsedMilliseconds + "ms");
+            _logger.LogInformation("Time to read the Graphml file: " + sw.ElapsedMilliseconds + "ms");
 
             return GraphInfo;
         }

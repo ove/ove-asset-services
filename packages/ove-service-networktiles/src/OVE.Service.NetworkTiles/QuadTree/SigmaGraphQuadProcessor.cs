@@ -67,8 +67,7 @@ namespace OVE.Service.NetworkTiles.QuadTree {
                 try {
                     return on.Attrs.ContainsKey("importance") && Convert.ToInt32(on.Attrs["importance"]) == 1;
                 }
-                catch (Exception e) {
-                    Console.WriteLine(e);
+                catch (Exception) {
                     return false;
                 }
             });

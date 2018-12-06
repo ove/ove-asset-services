@@ -24,21 +24,20 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
 
         public ConcurrentQuadTreeFactory(QuadCentroid centroid, ILogger logger,
             int maxBags = 10, int maxObjectsPerBag = 500, int maxWorklistSize = 250, int delay = 5) : base(logger) {
-            Console.WriteLine("---- ConcurrentQuadTreeFactory ----");
+            _logger.LogInformation("---- ConcurrentQuadTreeFactory ----");
             MaxBags = maxBags;
             MaxObjectsPerBag = maxObjectsPerBag;
             MaxWorklistSize = maxWorklistSize;
             this.Delay = delay;
-            this.QuadTree = new QuadTree<T>(centroid,
+            this.QuadTree = new QuadTree<T>(logger,centroid,
                 ShedObjects,
                 MarkObjectsForRework,
                 RegisterQuad, MaxBags,
                 MaxObjectsPerBag);
         }
 
-        protected override void ShedObjects(QuadTreeBag<T> bag) //todo this method could be used to reduce memory. 
-        {
-            Console.WriteLine("---- ShedObjects ----");
+        protected override void ShedObjects(QuadTreeBag<T> bag) {//todo this method could be used to reduce memory. 
+            _logger.LogInformation("---- ShedObjects ----");
 
             this._shedBags.AddOrUpdate(bag.QuadId, new ConcurrentBag<QuadTreeBag<T>> {bag},
                 (guid, objects) => {
@@ -57,7 +56,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         }
 
         protected override void MarkObjectsForRework(string quadGuid) {
-            Console.WriteLine("---- MarkObjectsForRework ----");
+            _logger.LogInformation("---- MarkObjectsForRework ----");
 
             _quadIdsWhichHaveBeenReworked.Add(quadGuid);
 
@@ -74,7 +73,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         public override bool HasCleanState() {
             var hasCleanState = WorkList.IsEmpty && ReworkQueueEmpty();
             if (!hasCleanState) {
-                Console.WriteLine("Bad state");
+                _logger.LogWarning("Quad tree has Bad state");
             }
 
             return hasCleanState;

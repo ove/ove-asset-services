@@ -11,7 +11,7 @@ using OVE.Service.NetworkTiles.QuadTree.Tree.Utilities;
 namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     // this is a abstract factory design pattern (its also generic)
     public abstract class AConcurrentQuadTreeFactory<T> where T : IQuadable<double> {
-        private readonly ILogger _logger;
+        protected readonly ILogger _logger;
 
         protected int MaxBags;
         public int MaxObjectsPerBag;

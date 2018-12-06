@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     public class QuadTree<T> where T : IQuadable<double> {
@@ -8,16 +9,18 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         private readonly int _maxObjectsPerBag;
 
         public readonly QuadTreeNode<T> Root;
+        private readonly ILogger _logger;
         private readonly Action<QuadTreeBag<T>> _shedObjects;
         private readonly Action<string> _markObjectsForRework;
         private readonly Action<string, QuadTreeNode<T>> _registerQuadTree;
 
         public string TreeId { get; } = Guid.NewGuid().ToString();
 
-        public QuadTree(QuadCentroid centroid, Action<QuadTreeBag<T>> shedObjects, Action<string> markObjectsForRework,
+        public QuadTree(ILogger logger, QuadCentroid centroid, Action<QuadTreeBag<T>> shedObjects, Action<string> markObjectsForRework,
             Action<string, QuadTreeNode<T>> registerQuadTree, int maxBagsBeforeSplit = 10, int maxObjectsPerBag = 500) {
         
-            this.Root = new QuadTreeNode<T>(centroid, TreeId);
+            this.Root = new QuadTreeNode<T>(logger,centroid, TreeId);
+            _logger = logger;
             this._shedObjects = shedObjects;
             this._markObjectsForRework = markObjectsForRework;
             this._registerQuadTree = registerQuadTree;
@@ -54,7 +57,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                 while (quad != null && !quad.IsLeaf()) {
                     var quads = quad.ReturnMatchingQuadrants(o); // this avoids recursion
                     if (!quads.Any()) {
-                        Console.WriteLine("logic error, no quad matched an item");
+                        _logger.LogWarning("logic error, no quad matched an item");
                     }
 
                     quad = quads.First(); // recurse down the quadtree for the first object
@@ -96,7 +99,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         }
 
         private void ShedObjectsToExternalStore(QuadTreeNode<T> quad) {
-            Console.WriteLine("---- ShedObjectsToExternalStore ---- quad.treeId: " + quad.TreeId);
+            _logger.LogInformation("---- ShedObjectsToExternalStore ---- quad.treeId: " + quad.TreeId);
             // extract objects and shed them
             var quadTreeBag = ExtractObjectsFromQuad(quad);
             _shedObjects(quadTreeBag);

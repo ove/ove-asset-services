@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     /// <summary>
@@ -9,6 +10,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     /// </summary>
     /// <typeparam name="T">type held within the quadtree</typeparam>
     public class QuadTreeNode<T> where T : IQuadable<double> {
+        private readonly ILogger _logger;
         public string Guid { get; set; } = System.Guid.NewGuid().ToString();
         public string CreationTime { get; }
         public QuadCentroid Centroid { get; }
@@ -27,18 +29,20 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         public string SparseBagId { get; set; }
         public int Depth { get; set; }
 
-        public QuadTreeNode(QuadCentroid centroid) {
+        public QuadTreeNode(ILogger logger, QuadCentroid centroid) {
+            _logger = logger;
             this.Centroid = centroid;
             CreationTime = DateTime.Now.ToString("s/m/H/dd/M/yyyy");
         }
 
         // Critical
-        public QuadTreeNode(QuadCentroid centroid, string treeId) {
+        public QuadTreeNode(ILogger logger, QuadCentroid centroid, string treeId) {
+            _logger = logger;
             this.Centroid = centroid;
             this.TreeId = treeId;
         }
 
-        public QuadTreeNode(double xCentroid, double yCentroid, double xWidth, double yWidth, string treeId) : this(
+        public QuadTreeNode(ILogger logger, double xCentroid, double yCentroid, double xWidth, double yWidth, string treeId) : this(logger,
             new QuadCentroid(xCentroid, yCentroid, xWidth, yWidth)) {
             this.TreeId = treeId;
         }
@@ -184,7 +188,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         }
 
         public bool TryGenerateChildren(Action<string, QuadTreeNode<T>> registerQuadTree) {
-            Console.WriteLine("---- TryGenerateChildren----");
+            
             if (this.IsLeaf()) {
                 // i.e. no other thread has already done this 
                 // Locks
@@ -192,6 +196,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                     // avoid two threads running this method
                     if (this.IsLeaf()) {
                         // in case another thread beat us as we waited for the lock
+
+                        _logger.LogInformation("---- Generating SubQuads ----");
                         var newQuads = new QuadTreeNode<T>[4];
                         // Create sub quadtree
                         var cptSubTree = 0;
@@ -205,9 +211,9 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                                 double newCentroidWidthY = this.Centroid.YWidth / 2;
 
                                 // Critical 
-                                newQuads[cptSubTree] = new QuadTreeNode<T>(newXCentroid, newYCentroid,
+                                newQuads[cptSubTree] = new QuadTreeNode<T>(_logger,newXCentroid, newYCentroid,
                                     newCentroidWidthX, newCentroidWidthY, this.TreeId);
-                                //newquads[cptSubTree] = new QuadTreeNode<T>(newXCentroid, newyCentroid, newCentroidWidth);
+                                
                                 registerQuadTree(newQuads[cptSubTree].Guid, newQuads[cptSubTree]);
                                 cptSubTree++;
                             }
@@ -222,29 +228,12 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
             return false;
         }
 
-        public int GetMaxDepth() {
-            int maxDepth = 0;
-            if (this.IsLeaf()) {
-                return maxDepth;
-            }
+        public int GetMaxDepth() => this.IsLeaf() ? 0 : 1 + this.SubQuads.Max(q => q.GetMaxDepth());
 
-            return 1 + this.SubQuads.Max(q => q.GetMaxDepth());
-        }
-
-        public int GetNumberElements() {
-            var rez = 0;
-            if (this.IsLeaf()) {
-                rez = this.ObjectsInside.Count
-                      + this.Counters.GetOrAdd("Quad" + this.Guid + "_objectsPushedToMongo", 0);
-            }
-            else {
-                if (this.SubQuads != null) {
-                    rez += this.SubQuads.Sum(sq => sq.GetNumberElements());
-                }
-            }
-
-            return rez;
-        }
+        public int GetNumberElements() => this.IsLeaf()
+            ? this.ObjectsInside.Count
+              + this.Counters.GetOrAdd("Quad" + this.Guid + "_objectsPushedToMongo", 0)
+            : SubQuads?.Sum(sq => sq.GetNumberElements()) ?? 0;
 
         /// <summary>
         /// work our way through the quadtree finding leaves which overlap with the defined rectangle 
@@ -257,8 +246,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         public List<QuadTreeNode<T>>
             ReturnMatchingLeaves(double xCenter, double yCenter, double xWidth, double yWidth) {
 
-            List<QuadTreeNode<T>> matchingLeaves = new List<QuadTreeNode<T>>();
-            Stack<QuadTreeNode<T>> workList = new Stack<QuadTreeNode<T>>(); // holds matching quadtree bits
+            var matchingLeaves = new List<QuadTreeNode<T>>();
+            var workList = new Stack<QuadTreeNode<T>>(); // holds matching quadtree bits
 
             if (QuadMatchesRectangle(this, ComputeCorners(xCenter, yCenter, xWidth, yWidth))) {
                 workList.Push(this);
