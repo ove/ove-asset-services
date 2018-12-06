@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,6 +28,28 @@ namespace OVE.Service.NetworkTiles.Controllers {
         public NetworkTilesController(ILogger<NetworkTilesController> logger, IConfiguration configuration) {
             _logger = logger;
             _configuration = configuration;
+        }
+
+        public async Task<ActionResult<IEnumerable<string>>> GetFilesWithin(string id, double x, double y, double xWidth, double yWidth) {
+            //todo this method is just sketched for testing
+            if (id == null) {
+                return NotFound();
+            }
+
+            if (await GetAssetStatus(id) != NetworkTilesProcessingStates.Processed) {
+                return NoContent();
+            }
+
+            var assetModel = await GetAssetById(id);
+
+            var root = QuadTreeSingleton.Instance.LoadedQuadTrees.GetOrAdd(assetModel.StorageLocation,
+                i => {
+                    return null;// todo serialization is not complete
+                });
+
+
+            return root.ReturnMatchingLeaves(x, y, xWidth, yWidth)
+                .Select(graphNode => assetModel.Project +"/"+ Path.GetFileNameWithoutExtension(assetModel.StorageLocation) + "/" + graphNode.Guid + ".json").ToList();// todo fix file names returned
         }
 
         /// <summary>
