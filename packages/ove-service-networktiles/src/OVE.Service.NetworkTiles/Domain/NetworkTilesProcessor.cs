@@ -46,16 +46,18 @@ namespace OVE.Service.NetworkTiles.Domain {
             // 4) upload the results 
             await service.UpdateStatus(asset, (int) NetworkTilesProcessingStates.Uploading);
 
-            // todo upload the index and directory structure 
+            string folder = Path.GetDirectoryName(localUri) + Path.DirectorySeparatorChar +
+                            Path.GetFileNameWithoutExtension(localUri);
+            await _fileOps.UploadDirectory(folder,asset);
 
             // 5) set the meta data properly
 
-            asset.AssetMeta = JsonConvert.SerializeObject("todo");// todo not sure what goes in here yet
+            asset.AssetMeta = JsonConvert.SerializeObject("todo");// todo not sure what goes in here yet - some stats about the quadtree?
             await UpdateAssetMeta(asset);
 
             // 6) delete local files 
-            _logger.LogInformation("about to delete files");
-            Directory.Delete(Path.GetDirectoryName(localUri), true);
+             _logger.LogInformation("about to delete files"); 
+             Directory.Delete(Path.GetDirectoryName(localUri), true);
 
             // 7) Mark it as completed            
             await service.UpdateStatus(asset, (int) NetworkTilesProcessingStates.Processed);

@@ -179,6 +179,33 @@ namespace OVE.Service.Core.FileOperations.S3 {
             }
         }
 
+        public async Task<bool> UploadDirectory(string directory, OVEAssetModel asset, string searchPattern = "*.*") {
+            _logger.LogInformation($"about to upload directory {directory}");
+
+            using (var fileTransferUtility = new TransferUtility(GetS3Client(_configuration))) {
+
+                // upload the directory
+                var assetRootFolder = Path.GetDirectoryName(asset.StorageLocation);
+
+                var filesKeyPrefix = assetRootFolder + "/" + new DirectoryInfo(directory).Name + "/"; // upload to the right folder
+                
+                TransferUtilityUploadDirectoryRequest request =
+                    new TransferUtilityUploadDirectoryRequest() {
+                        KeyPrefix = filesKeyPrefix,
+                        Directory = directory,
+                        BucketName = asset.Project,
+                        SearchOption = SearchOption.AllDirectories,
+                        SearchPattern = searchPattern
+                    };
+
+                await fileTransferUtility.UploadDirectoryAsync(request);
+
+                _logger.LogInformation($"finished upload for directory {directory}");
+
+                return true;
+            }
+        }
+
         public async Task Upload(string bucketName, string assetStorageLocation, Stream file) {
             await Upload(GetS3Client(_configuration), bucketName, assetStorageLocation, file);
         }

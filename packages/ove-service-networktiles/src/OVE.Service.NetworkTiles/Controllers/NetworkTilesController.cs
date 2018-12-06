@@ -30,6 +30,13 @@ namespace OVE.Service.NetworkTiles.Controllers {
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// return a list of the files within the archive.
+        /// </summary>
+        /// <param name="id">the asset id</param>
+        /// <returns>a json list of the asset files</returns>
+        [HttpGet]
+        [Route("/api/NetworkTilesController/GetFilesWithin/{id}/.{format?}")]
         public async Task<ActionResult<IEnumerable<string>>> GetFilesWithin(string id, double x, double y, double xWidth, double yWidth) {
             //todo this method is just sketched for testing
             if (id == null) {
@@ -58,7 +65,7 @@ namespace OVE.Service.NetworkTiles.Controllers {
         /// <param name="id">the asset id</param>
         /// <returns>a json list of the asset files</returns>
         [HttpGet]
-        [Route("/api/ArchiveController/Details/{id}.{format?}")]
+        [Route("/api/NetworkTilesController/Details/{id}.{format?}")]
         public async Task<ActionResult<string>> GetArchiveContents(string id) {
             // todo see if this method is needed
             if (id == null) {

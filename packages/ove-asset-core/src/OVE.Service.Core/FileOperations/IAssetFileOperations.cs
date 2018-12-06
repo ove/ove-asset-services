@@ -14,6 +14,7 @@ namespace OVE.Service.Core.FileOperations {
         Task<bool> Delete(OVEAssetModel asset);
         Task<bool> Save(OVEAssetModel asset, IFormFile upload);
         Task Upload(string bucketName, string assetStorageLocation, Stream file);
+
         /// <summary>
         /// Upload an index file and a directory
         /// note the index file and directory will be placed in the root of the asset folder on the object store
@@ -23,12 +24,24 @@ namespace OVE.Service.Core.FileOperations {
         /// <param name="asset">the asset</param>
         /// <returns>success / failure</returns>
         Task<bool> UploadIndexFileAndDirectory(string file, string directory, OVEAssetModel asset);
+
+        /// <summary>
+        /// Upload aa directory
+        /// note the directory will be placed in the root of the asset folder on the object store
+        /// </summary>
+        /// <param name="directory">full path of the directory</param>
+        /// <param name="asset">the asset</param>
+        /// <param name="searchPattern"></param>
+        /// <returns>success / failure</returns>
+        Task<bool> UploadDirectory(string directory, OVEAssetModel asset, string searchPattern = "*.*");
+
         /// <summary>
         /// Sanitize the file extension
         /// </summary>
         /// <param name="input">the fil extension</param>
         /// <returns>sanitized version</returns>
         string SanitizeExtension(string input);
+
         /// <summary>
         /// Validate a file name
         /// </summary>

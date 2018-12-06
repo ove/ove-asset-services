@@ -24,10 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\AssetStore\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\ove-asset-core\src\OVE.Service.Core\OVE.Service.Core.csproj" />
   </ItemGroup>
 
@@ -41,5 +37,9 @@
     <None Update="OVE.Service.NetworkTiles.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\AssetStore\" />
   </ItemGroup>
 </Project>

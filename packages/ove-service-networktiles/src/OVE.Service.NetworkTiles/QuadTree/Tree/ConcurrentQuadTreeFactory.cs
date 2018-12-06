@@ -95,7 +95,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
             return this._bagsForRework.IsEmpty;
         }
 
-        public override bool GetReworkBag(out QuadTreeBag<T> bag) {// todo this is where backs are restored from the rework - i think 
+        public override bool GetReworkBag(out QuadTreeBag<T> bag) {// todo this is where bags are restored from the rework - i think 
             return this._bagsForRework.TryTake(out bag); // pass by reference (twice)
         }
 
