@@ -17,14 +17,13 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         private readonly ConcurrentDictionary<string, ConcurrentBag<QuadTreeBag<T>>>
             _shedBags = new ConcurrentDictionary<string, ConcurrentBag<QuadTreeBag<T>>>();
 
-        private readonly ConcurrentBag<QuadTreeBag<T>> _bagsForRework
-            = new ConcurrentBag<QuadTreeBag<T>>();
+        private readonly ConcurrentBag<QuadTreeBag<T>> _bagsForRework = new ConcurrentBag<QuadTreeBag<T>>();
 
         private readonly ConcurrentBag<string> _quadIdsWhichHaveBeenReworked = new ConcurrentBag<string>();
 
         public ConcurrentQuadTreeFactory(QuadCentroid centroid, ILogger logger,
             int maxBags = 10, int maxObjectsPerBag = 500, int maxWorklistSize = 250, int delay = 5) : base(logger) {
-            _logger.LogInformation("---- ConcurrentQuadTreeFactory ----");
+            Logger.LogInformation("---- ConcurrentQuadTreeFactory ----");
             MaxBags = maxBags;
             MaxObjectsPerBag = maxObjectsPerBag;
             MaxWorklistSize = maxWorklistSize;
@@ -36,8 +35,9 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                 MaxObjectsPerBag);
         }
 
-        protected override void ShedObjects(QuadTreeBag<T> bag) {//todo this method could be used to reduce memory. 
-            _logger.LogInformation("---- ShedObjects ----");
+        protected override void ShedObjects(QuadTreeBag<T> bag) {
+            //todo if the tree becomes too large this method is where one could shed bags to disk or to database. 
+            Logger.LogInformation("---- ShedObjects ----");
 
             this._shedBags.AddOrUpdate(bag.QuadId, new ConcurrentBag<QuadTreeBag<T>> {bag},
                 (guid, objects) => {
@@ -56,7 +56,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         }
 
         protected override void MarkObjectsForRework(string quadGuid) {
-            _logger.LogInformation("---- MarkObjectsForRework ----");
+            Logger.LogInformation("---- MarkObjectsForRework ----");
 
             _quadIdsWhichHaveBeenReworked.Add(quadGuid);
 
@@ -73,7 +73,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         public override bool HasCleanState() {
             var hasCleanState = WorkList.IsEmpty && ReworkQueueEmpty();
             if (!hasCleanState) {
-                _logger.LogWarning("Quad tree has Bad state");
+                Logger.LogWarning("Quad tree has Bad state");
             }
 
             return hasCleanState;
@@ -95,7 +95,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
             return this._bagsForRework.IsEmpty;
         }
 
-        public override bool GetReworkBag(out QuadTreeBag<T> bag) {// todo this is where bags are restored from the rework - i think 
+        public override bool GetReworkBag(out QuadTreeBag<T> bag) {
+            // this is where bags are restored from the rework - i think 
             return this._bagsForRework.TryTake(out bag); // pass by reference (twice)
         }
 
@@ -107,16 +108,15 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                                    (n, a) => n + "," + a.Objects.Count + (a.NeedsRework ? "!" : "")));
         }
 
-        // todo Remove after tests. Should never be called
         public override bool GetReworkBag(out QuadTreeBag<T> bag, string treeId) {
             return this._bagsForRework.TryTake(out bag); // pass by reference (twice)
         }
 
         public override QuadTreeBag<T>[] GetBagsForQuad(QuadTreeNode<T> quad) {
             if (this._shedBags.TryGetValue(quad.Guid, out var res)) {
-                // todo 
                 return res.ToArray();
             }
+            // todo read from file if necessary - however this should never be necessary. 
 
             return new QuadTreeBag<T>[0];
         }

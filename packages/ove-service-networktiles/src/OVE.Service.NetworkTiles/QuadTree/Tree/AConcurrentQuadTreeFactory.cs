@@ -9,9 +9,12 @@ using Microsoft.Extensions.Logging;
 using OVE.Service.NetworkTiles.QuadTree.Tree.Utilities;
 
 namespace OVE.Service.NetworkTiles.QuadTree.Tree {
-    // this is a abstract factory design pattern (its also generic)
+    /// <summary>
+    ///  this is a abstract factory design pattern (its also generic)
+    /// </summary>
+    /// <typeparam name="T">the type of thing within the quadtree</typeparam>
     public abstract class AConcurrentQuadTreeFactory<T> where T : IQuadable<double> {
-        protected readonly ILogger _logger;
+        protected readonly ILogger Logger;
 
         protected int MaxBags;
         public int MaxObjectsPerBag;
@@ -45,7 +48,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         protected readonly SemaphoreSlim CurrentlyAdding = new SemaphoreSlim(1, 1);
 
         protected AConcurrentQuadTreeFactory(ILogger logger) {
-            _logger = logger;
+            Logger = logger;
         }
 
         /// <summary>
@@ -158,7 +161,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                                     }
                                 }
                                 catch (Exception e) {
-                                    _logger.LogError(e,"unable to add obj to tree");
+                                    Logger.LogError(e,"unable to add obj to tree");
                                 }
                             }
 
@@ -173,7 +176,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                         Log("Finished worker  Thread");
                     }
                     catch (Exception e) {
-                        _logger.LogError(e,"error in worker code");
+                        Logger.LogError(e,"error in worker code");
                     }
 
                     this._workerCompletionSemaphore.Release();
@@ -232,7 +235,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
 
                         }
                         catch (Exception e) {
-                            _logger.LogError(e,"failed reworker");
+                            Logger.LogError(e,"failed reworker");
                             throw;
                         }
                     }));
@@ -249,7 +252,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         public abstract bool GetReworkBag(out QuadTreeBag<T> bag, string treeId);
 
         private void Log(string msg) {
-            _logger.LogInformation(DateTime.Now + " [" + Task.CurrentId + "]" + msg);
+            Logger.LogInformation(DateTime.Now + " [" + Task.CurrentId + "]" + msg);
         }
         
         /// <summary>

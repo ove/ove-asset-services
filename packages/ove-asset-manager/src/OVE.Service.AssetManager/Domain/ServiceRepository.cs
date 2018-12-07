@@ -12,7 +12,7 @@ using OVE.Service.Core.Services;
 namespace OVE.Service.AssetManager.Domain {
     /// <summary>
     /// A singleton services for managing knowledge of other services.
-    /// filled form appsetting.json and API updates from other services.
+    /// filled form appsettings.json and API updates from other services.
     /// </summary>
     public class ServiceRepository {
         private readonly ILogger<ServiceRepository> _logger;

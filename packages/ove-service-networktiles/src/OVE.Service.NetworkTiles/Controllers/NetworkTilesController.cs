@@ -24,10 +24,12 @@ namespace OVE.Service.NetworkTiles.Controllers {
     public class NetworkTilesController : Controller {
         private readonly ILogger<NetworkTilesController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly QuadTreeRepository _quadTreeRepository;
 
-        public NetworkTilesController(ILogger<NetworkTilesController> logger, IConfiguration configuration) {
+        public NetworkTilesController(ILogger<NetworkTilesController> logger, IConfiguration configuration, QuadTreeRepository quadTreeRepository) {
             _logger = logger;
             _configuration = configuration;
+            _quadTreeRepository = quadTreeRepository;
         }
 
         /// <summary>
@@ -49,11 +51,7 @@ namespace OVE.Service.NetworkTiles.Controllers {
 
             var assetModel = await GetAssetById(id);
 
-            var root = QuadTreeSingleton.Instance.LoadedQuadTrees.GetOrAdd(assetModel.StorageLocation,
-                i => {
-                    return null;// todo serialization is not complete
-                });
-
+            var root = _quadTreeRepository.Request(assetModel);
 
             return root.ReturnMatchingLeaves(x, y, xWidth, yWidth)
                 .Select(graphNode => assetModel.Project +"/"+ Path.GetFileNameWithoutExtension(assetModel.StorageLocation) + "/" + graphNode.Guid + ".json").ToList();// todo fix file names returned

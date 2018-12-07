@@ -20,11 +20,13 @@ namespace OVE.Service.NetworkTiles.Domain {
         private readonly ILogger _logger;
         private readonly IAssetFileOperations _fileOps;
         private readonly IConfiguration _configuration;
+        private readonly QuadTreeRepository _quadTreeRepository;
 
-        public NetworkTilesProcessor(ILogger<NetworkTilesProcessor> logger,IAssetFileOperations fileOps,IConfiguration configuration) {
+        public NetworkTilesProcessor(ILogger<NetworkTilesProcessor> logger,IAssetFileOperations fileOps,IConfiguration configuration, QuadTreeRepository quadTreeRepository) {
             _logger = logger;
             _fileOps = fileOps;
             _configuration = configuration;
+            _quadTreeRepository = quadTreeRepository;
         }
 
         #region Implementation of IAssetProcessor<NetworkTilesProcessor>
@@ -40,8 +42,8 @@ namespace OVE.Service.NetworkTiles.Domain {
 
             // do processing
             QuadTreeNode<GraphObject> root = QuadTreeProcessor.ProcessFile(localUri,_logger);
-            // store it in memory
-            QuadTreeSingleton.Instance.LoadedQuadTrees.GetOrAdd(asset.StorageLocation, id => root);
+            // store it in memory (lazily)
+            _quadTreeRepository.Store(asset,root);
 
             // 4) upload the results 
             await service.UpdateStatus(asset, (int) NetworkTilesProcessingStates.Uploading);

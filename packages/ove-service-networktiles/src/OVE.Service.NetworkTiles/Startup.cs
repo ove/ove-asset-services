@@ -53,10 +53,11 @@ namespace OVE.Service.NetworkTiles {
             
             // dependency injection of domain classes 
             services.AddSingleton(Configuration);
+            services.AddSingleton<QuadTreeRepository>();
             services.AddTransient<NetworkTilesProcessor>();
             services.AddTransient<IAssetFileOperations, S3AssetFileOperations>();
             
-            //start the processor microservice 
+            // start the processor microservice 
             services.AddHostedService<AssetProcessingService<NetworkTilesProcessor,NetworkTilesProcessingStates>>();
 
             // use mvc
