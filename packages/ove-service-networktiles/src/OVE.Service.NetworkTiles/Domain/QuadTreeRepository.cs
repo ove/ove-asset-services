@@ -11,7 +11,7 @@ namespace OVE.Service.NetworkTiles.Domain {
     /// A Lazy concurrent dictionary to store loaded quad trees between requests
     /// </summary>
     public class QuadTreeRepository {
-        private ILogger<QuadTreeRepository> _logger;
+        private readonly ILogger<QuadTreeRepository> _logger;
 
         private readonly LazyConcurrentDictionary<string, Tuple<OVEAssetModel, QuadTreeNode<GraphObject>>>
             _loadedQuadTrees = new LazyConcurrentDictionary<string, Tuple<OVEAssetModel, QuadTreeNode<GraphObject>>>();

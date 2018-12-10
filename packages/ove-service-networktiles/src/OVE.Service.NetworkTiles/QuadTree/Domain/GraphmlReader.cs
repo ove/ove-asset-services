@@ -26,7 +26,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
     /// the solution is to provide the scaling factors outside of the graph reader and to provide the links with their start and finish coordinates...
     /// </summary>
     public class GraphmlReader {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public GraphInfo GraphInfo { get; set; }
         public Dictionary<string, GraphNode> NodesById;
@@ -100,10 +100,10 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             var xReader = XmlReader.Create(new StringReader(meta));
             XDocument doc = XDocument.Load(xReader);
 
-            _keys = doc.Root.Elements(ns + "key").Select(k =>
+            _keys = doc.Root?.Elements(ns + "key").Select(k =>
                 new KeyField {
-                    Id = k.Attribute("id").Value, Name = k.Attribute("attr.name").Value,
-                    ValueType = k.Attribute("attr.type").Value, AppliesTo = k.Attribute("for").Value
+                    Id = k.Attribute("id")?.Value, Name = k.Attribute("attr.name")?.Value,
+                    ValueType = k.Attribute("attr.type")?.Value, AppliesTo = k.Attribute("for")?.Value
                 }).ToList();
 
             ComputeGraphProperties();
@@ -121,13 +121,13 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
 
             foreach (XElement singleNode in XmlExtensions.StreamReadXElement(graphmlFile, "node")) {
                 var data = singleNode.Elements(ns + "data").ToDictionary(
-                    xdata => xdata.Attribute("key").Value,
+                    xdata => xdata.Attribute("key")?.Value,
                     xdata => xdata.Value);
 
                 #region fill Nodes data structure
 
                 GraphNode newNode = new GraphNode {
-                    Id = singleNode.Attribute("id").Value,
+                    Id = singleNode.Attribute("id")?.Value,
                     // remove attrs that have their own field (R,G,B, size)
                     Label = _hasLabel && data.ContainsKey("label") ? data["label"] : "",
                     // leave labels blank
@@ -195,10 +195,10 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             foreach (XElement xn in XmlExtensions.StreamReadXElement(graphmlFile, "edge")) {
                 var l =
                     new {
-                        source = xn.Attribute("source").Value,
-                        target = xn.Attribute("target").Value,
+                        source = xn.Attribute("source")?.Value,
+                        target = xn.Attribute("target")?.Value,
                         data = xn.Elements(ns + "data").Any()
-                            ? xn.Elements(ns + "data").ToDictionary(xdata => xdata.Attribute("key").Value,
+                            ? xn.Elements(ns + "data").ToDictionary(xdata => xdata.Attribute("key")?.Value,
                                 xdata => xdata.Value)
                             : new Dictionary<string, string>()
                     };
@@ -236,7 +236,10 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             this._hasY = _nodeKeys.Any(k => k.Name == "y");
 
             this._nodeHasColour = _nodeHasR && _nodeHasG && _nodeHasB;
-            this._nodeHasPosition = _hasX && _hasY; //TODO throw exception / log
+            this._nodeHasPosition = _hasX && _hasY;
+            if (!this._nodeHasPosition) {
+                _logger.LogWarning("Found graphml without x and y positions");
+            }
 
             this._edgeKeys = _keys.Where(k => k.AppliesTo == "edge").ToList();
             this._edgeHasWeight = _edgeKeys.Any(k => k.Name == "weight");
@@ -244,33 +247,6 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
             this._edgeHasG = _edgeKeys.Any(k => k.Name == "g");
             this._edgeHasB = _edgeKeys.Any(k => k.Name == "b");
             this._edgeHasColour = _edgeHasR && _edgeHasG && _edgeHasB;
-        }
-        
-        /// <summary>
-        /// this groups the read objects into groups of objects 
-        /// </summary>
-        /// <param name="graphObj">The graph objects </param>
-        /// <returns></returns>
-        public static IEnumerable<List<TK>> BatchObjects<T, TK>(IEnumerable<T> graphObj) where T : TK {
-            var enumerator = graphObj.GetEnumerator();
-            List<TK> list = new List<TK>();
-            int count = 0;
-            while (enumerator.MoveNext()) {
-
-                list.Add(enumerator.Current);
-                count++;
-                if (count >= 500) {
-                    yield return list;
-                    list = new List<TK>();
-                    count = 0;
-                }
-            }
-
-            if (list.Any()) {
-                yield return list;
-            }
-
-            enumerator.Dispose();
         }
     }
 }
