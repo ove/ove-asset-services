@@ -13,9 +13,9 @@ namespace OVE.Service.Core.Assets {
     /// </summary>
     public class AssetApi {
         private readonly IConfiguration _configuration;
-        private readonly ILogger _logger;
+        private readonly ILogger<AssetApi> _logger;
 
-        public AssetApi(IConfiguration configuration, ILogger logger) {
+        public AssetApi(IConfiguration configuration, ILogger<AssetApi> logger) {
             _configuration = configuration;
             _logger = logger;
         }
