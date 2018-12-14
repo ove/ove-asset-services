@@ -14,6 +14,8 @@ using OVE.Service.Core.Assets;
 using OVE.Service.Core.Extensions;
 using OVE.Service.NetworkTiles.Domain;
 using OVE.Service.NetworkTiles.Models;
+using OVE.Service.NetworkTiles.QuadTree.Domain.Graph;
+using OVE.Service.NetworkTiles.QuadTree.Tree;
 
 namespace OVE.Service.NetworkTiles.Controllers {
     /// <summary>
@@ -25,11 +27,13 @@ namespace OVE.Service.NetworkTiles.Controllers {
         private readonly ILogger<NetworkTilesController> _logger;
         private readonly IConfiguration _configuration;
         private readonly QuadTreeRepository _quadTreeRepository;
+        private readonly AssetApi _assetApi;
 
-        public NetworkTilesController(ILogger<NetworkTilesController> logger, IConfiguration configuration, QuadTreeRepository quadTreeRepository) {
+        public NetworkTilesController(ILogger<NetworkTilesController> logger, IConfiguration configuration, QuadTreeRepository quadTreeRepository, AssetApi assetApi) {
             _logger = logger;
             _configuration = configuration;
             _quadTreeRepository = quadTreeRepository;
+            _assetApi = assetApi;
         }
 
         /// <summary>
@@ -51,9 +55,11 @@ namespace OVE.Service.NetworkTiles.Controllers {
 
             var assetModel = await GetAssetById(id);
 
-            var root = _quadTreeRepository.Request(assetModel);
+            var cachedQuad = _quadTreeRepository.Request(assetModel);
 
-            return root.ReturnMatchingLeaves(x, y, xWidth, yWidth)
+            List<QuadTreeNode<GraphObject>> leaves = cachedQuad.QuadTree.ReturnMatchingLeaves(x, y, xWidth, yWidth);
+
+            return leaves
                 .Select(graphNode => assetModel.Project +"/"+ Path.GetFileNameWithoutExtension(assetModel.StorageLocation) + "/" + graphNode.Guid + ".json").ToList();// todo fix file names returned
         }
 
@@ -105,7 +111,7 @@ namespace OVE.Service.NetworkTiles.Controllers {
                 return NotFound();
             }
 
-            var url = await GetAssetUri(assetModel);
+            var url = await _assetApi.GetAssetUri(assetModel);
 
             List<string> files = new List<string>();
             if (!string.IsNullOrWhiteSpace(assetModel.AssetMeta)) {
@@ -126,24 +132,6 @@ namespace OVE.Service.NetworkTiles.Controllers {
             };
 
             return View(avm);
-        }
-
-        private async Task<string> GetAssetUri(OVEAssetModel asset) {
-
-            string url = _configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
-                         _configuration.GetValue<string>("AssetUrlApi") +
-                         asset.Id;
-
-            using (var client = new HttpClient()) {
-                var responseMessage = await client.GetAsync(url);
-                if (responseMessage.StatusCode == HttpStatusCode.OK) {
-                    var assetString = await responseMessage.Content.ReadAsStringAsync();
-                    _logger.LogInformation("About to download asset from url " + assetString);
-                    return assetString;
-                }
-            }
-
-            throw new Exception("Failed to get download URL for asset");
         }
 
         private async Task<NetworkTilesProcessingStates> GetAssetStatus(string id) {

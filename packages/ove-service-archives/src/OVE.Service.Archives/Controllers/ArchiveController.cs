@@ -22,10 +22,12 @@ namespace OVE.Service.Archives.Controllers {
     public class ArchiveController : Controller {
         private readonly ILogger<ArchiveController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly AssetApi _assetApi;
 
-        public ArchiveController(ILogger<ArchiveController> logger, IConfiguration configuration) {
+        public ArchiveController(ILogger<ArchiveController> logger, IConfiguration configuration, AssetApi assetApi) {
             _logger = logger;
             _configuration = configuration;
+            _assetApi = assetApi;
         }
 
         /// <summary>
@@ -75,7 +77,7 @@ namespace OVE.Service.Archives.Controllers {
                 return NotFound();
             }
 
-            var url = await GetAssetUri(assetModel);
+            var url = await _assetApi.GetAssetUri(assetModel);
 
             List<string> files = new List<string>();
             if (!string.IsNullOrWhiteSpace(assetModel.AssetMeta)) {
@@ -96,24 +98,6 @@ namespace OVE.Service.Archives.Controllers {
             };
 
             return View(avm);
-        }
-
-        private async Task<string> GetAssetUri(OVEAssetModel asset) {
-
-            string url = _configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
-                         _configuration.GetValue<string>("AssetUrlApi") +
-                         asset.Id;
-
-            using (var client = new HttpClient()) {
-                var responseMessage = await client.GetAsync(url);
-                if (responseMessage.StatusCode == HttpStatusCode.OK) {
-                    var assetString = await responseMessage.Content.ReadAsStringAsync();
-                    _logger.LogInformation("About to download asset from url " + assetString);
-                    return assetString;
-                }
-            }
-
-            throw new Exception("Failed to get download URL for asset");
         }
 
         private async Task<ArchiveProcessingStates> GetAssetStatus(string id) {

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OVE.Service.Archives.Domain;
+using OVE.Service.Core.Assets;
 using OVE.Service.Core.FileOperations;
 using OVE.Service.Core.FileOperations.S3;
 using OVE.Service.Core.Processing.Service;
@@ -54,6 +55,7 @@ namespace OVE.Service.Archives {
             // dependency injection of domain classes 
             services.AddSingleton(Configuration);
             services.AddTransient<ArchiveProcessor>();
+            services.AddTransient<AssetApi>();
             services.AddTransient<IAssetFileOperations, S3AssetFileOperations>();
             
             //start the processor microservice 

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OVE.Service.Core.Assets;
 using OVE.Service.Core.FileOperations;
 using OVE.Service.Core.FileOperations.S3;
 using OVE.Service.Core.Processing.Service;
@@ -55,6 +56,7 @@ namespace OVE.Service.NetworkTiles {
             services.AddSingleton(Configuration);
             services.AddSingleton<QuadTreeRepository>();
             services.AddTransient<NetworkTilesProcessor>();
+            services.AddTransient<AssetApi>();
             services.AddTransient<IAssetFileOperations, S3AssetFileOperations>();
             
             // start the processor microservice 
