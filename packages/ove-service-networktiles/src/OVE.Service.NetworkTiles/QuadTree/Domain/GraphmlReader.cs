@@ -68,7 +68,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
         private float _maxX;
         private float _maxY;
 
-        public GraphmlReader(ILogger logger,bool rescale = false) {
+        public GraphmlReader(ILogger logger,bool rescale = true) {
             this._logger = logger;
             this.Rescale = rescale;
         }
