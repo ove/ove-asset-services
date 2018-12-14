@@ -6,6 +6,6 @@ DONE> what happens when the sparse bag is trying to find more objects than actua
 > normalize each quad tree bag to 0..1 in x and y 
 DONE> ensure all edges have their nodes in the bag
 DONE> stop changing aspect ratio of observatory
-> API to load a quad and store the # clients and # bags
+DONE> API to load a quad and store the # clients and # bags
 > API to for renderers to call to return a list of bags 
 > integration with the networks app

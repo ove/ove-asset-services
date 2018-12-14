@@ -13,5 +13,7 @@ namespace OVE.Service.NetworkTiles.Domain {
         public OVEAssetModel Asset { get; set; }
         public QuadTreeNode<GraphObject> QuadTree { get; set; }
         public string BaseUrl {get; set; }
+        public int Clients { get; set; }
+        public int BagsPerClient { get; set; }
     }
 }

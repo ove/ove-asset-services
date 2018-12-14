@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OVE.Service.Core.Extensions;
 
 namespace OVE.Service.Core.Assets {
@@ -35,6 +36,26 @@ namespace OVE.Service.Core.Assets {
             }
 
             throw new Exception("Failed to get download URL for asset");
+        }
+
+        public async Task<OVEAssetModel> GetAssetById(string id) {
+            string url = _configuration.GetValue<string>("AssetManagerHostUrl").RemoveTrailingSlash() +
+                         _configuration.GetValue<string>("GetAssetByIdApi") +
+                         id + ".json";
+
+            _logger.LogInformation("about to get on " + url);
+
+            using (var client = new HttpClient()) {
+                var responseMessage = await client.GetAsync(url);
+                if (responseMessage.StatusCode == HttpStatusCode.OK) {
+                    var assetString = await responseMessage.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrWhiteSpace(assetString)) {
+                        return JsonConvert.DeserializeObject<OVEAssetModel>(assetString);
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -2,22 +2,14 @@
 @using Newtonsoft.Json
 
 @{
+    // todo add stats about the graph to this view
     ViewData["Title"] = "Network Tileset Details";
-    // todo update this 
 }
 
 <h2>Details</h2>
 
 <div>
     <h4>Network Tiles Details</h4>
-    <h3>Download Zip <a href="@Model.AssetUrl">Here</a></h3>
-    <hr />
-        <ol>
-            @foreach (var file in Model.Files){
-               var url = Model.AssetUrl.Replace(Model.RootFile,file); 
-               <li>
-                   <a href="@url">@file</a>
-               </li>
-            }
-        </ol>>
+    <h3>Download Graph <a href="@Model.AssetUrl">Here</a></h3>
+    <h3>Download Root file <a href="@Model.RootFile">Here</a></h3>
 </div>
