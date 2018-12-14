@@ -21,13 +21,11 @@ namespace OVE.Service.NetworkTiles.Controllers {
     [FormatFilter]
     public class NetworkTilesController : Controller {
         private readonly ILogger<NetworkTilesController> _logger;
-        private readonly IConfiguration _configuration;
         private readonly QuadTreeRepository _quadTreeRepository;
         private readonly AssetApi _assetApi;
 
-        public NetworkTilesController(ILogger<NetworkTilesController> logger, IConfiguration configuration, QuadTreeRepository quadTreeRepository, AssetApi assetApi) {
+        public NetworkTilesController(ILogger<NetworkTilesController> logger, QuadTreeRepository quadTreeRepository, AssetApi assetApi) {
             _logger = logger;
-            _configuration = configuration;
             _quadTreeRepository = quadTreeRepository;
             _assetApi = assetApi;
         }
@@ -36,6 +34,10 @@ namespace OVE.Service.NetworkTiles.Controllers {
         /// return a list of the files within the archive.
         /// </summary>
         /// <param name="id">the asset id</param>
+        /// <param name="x">centroid x</param>
+        /// <param name="y">centroid y</param>
+        /// <param name="xWidth">width of box in x</param>
+        /// <param name="yWidth">width of box in y</param>
         /// <returns>a json list of the asset files</returns>
         [HttpGet]
         [Route("/api/NetworkTilesController/GetFilesWithin/{id}/.{format?}")]
@@ -50,7 +52,11 @@ namespace OVE.Service.NetworkTiles.Controllers {
             }
 
             List<QuadTreeNode<GraphObject>> leaves = cachedQuad.QuadTree.ReturnMatchingLeaves(x, y, xWidth, yWidth);
+            _logger.LogInformation($"Found {leaves.Count} Leaves in a  search");
+            return ReturnLeaves(leaves, cachedQuad);
+        }
 
+        private static ActionResult<string> ReturnLeaves(List<QuadTreeNode<GraphObject>> leaves, CachedQuadTree cachedQuad) {
             var res = leaves.Select(l => new {
                 Id = l.Guid,
                 Centriod = l.Centroid,
@@ -61,16 +67,41 @@ namespace OVE.Service.NetworkTiles.Controllers {
         }
 
         /// <summary>
+        /// return a list of the files within the archive.
+        /// </summary>
+        /// <param name="id">the asset id</param>
+        /// <param name="x">centroid x</param>
+        /// <param name="y">centroid y</param>
+        /// <param name="xWidth">width of box in x</param>
+        /// <param name="yWidth">width of box in y</param>
+        /// <returns>a json list of the asset files</returns>
+        [HttpGet]
+        [Route("/api/NetworkTilesController/GetSparseFilesWithin/{id}/.{format?}")]
+        public ActionResult<string> GetSparseFilesWithin(string id, double x, double y, double xWidth, double yWidth) {
+            if (id == null) {
+                return NotFound();
+            }
+
+            var cachedQuad = _quadTreeRepository.Request(id);
+            if (cachedQuad == null) {
+                return NoContent();
+            }
+
+            List<QuadTreeNode<GraphObject>> leaves = cachedQuad.QuadTree.ReturnSparseMatchingLeaves(x, y, xWidth, yWidth,cachedQuad.TotalBags);
+            _logger.LogInformation($"Found {leaves.Count} Leaves in a Sparse search");
+            return ReturnLeaves(leaves, cachedQuad);
+        }
+
+        /// <summary>
         /// LoadNetwork into memory 
         /// </summary> 
         /// <param name="id">the asset id</param>
-        /// <param name="clients">number of expected rendering clients</param>
-        /// <param name="bagsPerClient">number of bags each client can render</param>
+        /// <param name="totalBags">number of bags which may be rendered</param>
         /// <returns>boundaries of the graph</returns>
         [HttpGet]
         [Route("/api/NetworkTilesController/LoadNetwork/{id}.{format?}")]
-        public async Task<ActionResult<string>> LoadNetwork(string id, int clients,int bagsPerClient) {
-            
+        public async Task<ActionResult<string>> LoadNetwork(string id, int totalBags) {
+            _logger.LogInformation("about to load quad for "+id);
             if (id == null) {
                 return NotFound();
             }
@@ -90,8 +121,7 @@ namespace OVE.Service.NetworkTiles.Controllers {
                 return NoContent();
             }
 
-            cache.Clients = clients;
-            cache.BagsPerClient = bagsPerClient;
+            cache.TotalBags = totalBags;
 
             return JsonConvert.SerializeObject(cache.QuadTree.Centroid);
         }
@@ -104,6 +134,7 @@ namespace OVE.Service.NetworkTiles.Controllers {
         [HttpGet]
         [Route("/api/NetworkTilesController/NetworkTilesDetails/{id}.{format?}")]
         public async Task<ActionResult> NetworkTilesDetails(string id) {
+            _logger.LogInformation("finding view for  "+id);
             if (id == null) {
                 return NotFound();
             }

@@ -133,55 +133,6 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
             }
         }
 
-        public void ReturnLeafs(double raVal, double decVal, double fovVal, List<QuadTreeNode<T>> listResult) {
-            if (this.IsLeaf()) {
-                // check if there is a matching element in the database of bags nodes containing objects? 
-                listResult.Add(this);
-                //yield return this;
-            }
-            // Else, return the quadrants that match
-            else {
-                QuadTreeNode<T>[] subQuads = ReturnMatchingQuadrants(raVal, decVal, fovVal, fovVal);
-                foreach (var subQuad in subQuads) {
-                    //foreach (var returnLeaf in subQuad.ReturnLeafs(raVal, decVal, fovVal))
-                    //    { yield return returnLeaf;}
-                    subQuad.ReturnLeafs(raVal, decVal, fovVal, fovVal, listResult);
-                }
-            }
-        }
-
-        public void ReturnAllLeafs(List<QuadTreeNode<T>> listResult) {
-            if (this.IsLeaf()) {
-                // check if there is a matching element in the database of bags nodes containing objects? 
-                listResult.Add(this);
-                //yield return this;
-            }
-            // Else, return the quadrants that match
-            else {
-                foreach (var subQuad in this.SubQuads) {
-                    subQuad.ReturnAllLeafs(listResult);
-                }
-            }
-        }
-
-        public void ReturnLeafsNames(double raVal, double decVal, double fovValX, double fovValY,
-            ref string listResult) {
-            if (this.IsLeaf()) {
-                // check if there is a matching element in the database of bags nodes containing objects? 
-                listResult += " " + (this.Guid);
-                //yield return this;
-            }
-            // Else, return the quadrants that match
-            else {
-                QuadTreeNode<T>[] subQuads = ReturnMatchingQuadrants(raVal, decVal, fovValX, fovValY);
-                foreach (var subQuad in subQuads) {
-                    //foreach (var returnLeaf in subQuad.ReturnLeafs(raVal, decVal, fovVal))
-                    //    { yield return returnLeaf;}
-                    subQuad.ReturnLeafsNames(raVal, decVal, fovValX, fovValY, ref listResult);
-                }
-            }
-        }
-
         // Leaf determined by either containing objects (leaf) or none (node)
         public bool IsLeaf() {
             return this.SubQuads == null;
@@ -230,11 +181,6 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
 
         public int GetMaxDepth() => this.IsLeaf() ? 0 : 1 + this.SubQuads.Max(q => q.GetMaxDepth());
 
-        public int GetNumberElements() => this.IsLeaf()
-            ? this.ObjectsInside.Count
-              + this.Counters.GetOrAdd("Quad" + this.Guid + "_objectsPushedToMongo", 0)
-            : SubQuads?.Sum(sq => sq.GetNumberElements()) ?? 0;
-
         /// <summary>
         /// work our way through the quadtree finding leaves which overlap with the defined rectangle 
         /// </summary>
@@ -243,8 +189,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
         /// <param name="xWidth">Width of the x.</param>
         /// <param name="yWidth">Width of the y.</param>
         /// <returns></returns>
-        public List<QuadTreeNode<T>>
-            ReturnMatchingLeaves(double xCenter, double yCenter, double xWidth, double yWidth) {
+        public List<QuadTreeNode<T>> ReturnMatchingLeaves(double xCenter, double yCenter, double xWidth, double yWidth) {
 
             var matchingLeaves = new List<QuadTreeNode<T>>();
             var workList = new Stack<QuadTreeNode<T>>(); // holds matching quadtree bits
@@ -262,6 +207,63 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
                     foreach (var sq in q.ReturnMatchingQuadrants(xCenter, yCenter, xWidth, yWidth)) {
                         workList.Push(sq); // only add things which match
                     }
+                }
+            }
+
+            return matchingLeaves;
+        }
+
+        /// <summary>
+        /// work our way through the quadtree finding leaves which overlap with the defined rectangle 
+        ///  this is a sparse implementation working from the top down 
+        /// algorithm: 
+        /// set up - take root node
+        /// 
+        /// order leaves by # elements in tree 
+        /// then for each 
+        ///    Replace node with children to leaf list iff they overlap with target
+        /// 
+        /// stop when # leafs requested is reached 
+        /// </summary>
+        /// <param name="xCenter">The xCenter.</param>
+        /// <param name="yCenter">The yCenter.</param>
+        /// <param name="xWidth">Width of the x.</param>
+        /// <param name="yWidth">Width of the y.</param>
+        /// <param name="bags"># bags to return</param>
+        /// <returns></returns>
+        public List<QuadTreeNode<T>> ReturnSparseMatchingLeaves(double xCenter, double yCenter, double xWidth, double yWidth, int bags) {
+
+            // this is a sparse implementation working from the top down 
+            // algorithm: 
+            // set up - take root node
+            // 
+            // order leaves by # elements in tree 
+            //  then for each 
+            //    Replace node with children to leaf list iff they overlap with target
+            // 
+            // stop when # leafs requested is reached or recursion (no changes)
+
+            List<QuadTreeNode<T>> matchingLeaves = new List<QuadTreeNode<T>> {this};
+
+            bool changes = true;
+            
+            while (matchingLeaves.Count < bags && changes) {
+
+                changes = false;
+
+                
+                var array = matchingLeaves.OrderBy(b => b.Depth).ToArray();
+                for (var q = 0; q < array.Length && !changes; q++) {
+                    // move to array to stop messing with the underlying collection
+                    // exit after a single change - the ordering above will help us move through the tree
+                    var leaf = array[q];
+
+                    if (leaf.IsLeaf()) continue;
+                    var matchingChildren = leaf.ReturnMatchingQuadrants(xCenter, yCenter, xWidth, yWidth);
+                    
+                    matchingLeaves.Remove(leaf);
+                    matchingLeaves.AddRange(matchingChildren);
+                    changes = true;
                 }
             }
 
