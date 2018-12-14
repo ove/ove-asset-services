@@ -42,9 +42,13 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain.Graph {
 
         [JsonProperty("source")]
         public string Source { get; set; }
+        [JsonIgnore]
+        public GraphNode SourceNode { get; set; }
 
         [JsonProperty("target")]
         public string Target { get; set; }
+        [JsonIgnore]
+        public GraphNode TargetNode { get; set; }
 
         [JsonIgnore]
         public Position StartPos { get; set; }

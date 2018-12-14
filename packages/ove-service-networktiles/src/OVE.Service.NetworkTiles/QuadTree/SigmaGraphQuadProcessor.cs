@@ -34,7 +34,7 @@ namespace OVE.Service.NetworkTiles.QuadTree {
 
             var factory =
                 new ConcurrentQuadTreeFactory<GraphObject>(new QuadCentroid(graph.RectDim.Width, graph.RectDim.Height),
-                    logger, 1, maxObjectsPerBag); // todo remove 1
+                    logger, 1, maxObjectsPerBag); // todo # bags per node configurable 
 
             // Add the graph objects to the quadtree factory
             var addData = new List<IEnumerable<List<GraphObject>>> {
@@ -44,7 +44,7 @@ namespace OVE.Service.NetworkTiles.QuadTree {
 
             logger.LogInformation("About to process a graph");
 
-            // TODO not sure if these numbers of threads is optimal - will depend upon server make configurable!
+            // TODO make these thread limits configurable 
             factory.ConcurrentAdd(addData, workThreads: 3, reworkThreads: 2);
             factory.QuadTree.ShedAllObjects();
 
@@ -134,12 +134,22 @@ namespace OVE.Service.NetworkTiles.QuadTree {
                 }
             }
 
-            // Include the nodes of the edges in this bag
-            //List<string> nodes = edges.Select(e => e.Source).Union(edges.Select(e => e.Target))       here removed the effects of edge nodes to avoid the use of dictionary
-            //   .Union(leafNodes).ToList();
-            //Debug.WriteLine("Node Count: " + leafNodes.Count 
-            //              + " New Node Count: " + nodes.Count 
-            //              + " Edge Count: " + edges.Count);
+            var dict = nodes.ToDictionary(n => n.Id, n => n);
+
+            foreach (var edge in edges) {
+                if (!dict.ContainsKey(edge.Source)) {
+                    GraphNode n = edge.SourceNode;
+                    nodes.Add(n);
+                    dict.Add(n.Id,n);
+                }
+                if (!dict.ContainsKey(edge.Target)) {
+                    GraphNode n = edge.TargetNode;
+                    nodes.Add(n);
+                    dict.Add(n.Id,n);
+                }
+            }
+
+            // normalize node positions 
 
             // Convert the graph objects to JSON and write to disk
             string outputFile = Path.Combine(outputFolder, key + ".json");

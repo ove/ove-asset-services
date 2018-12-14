@@ -210,6 +210,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
                     R = _edgeHasColour ? int.Parse(l.data["r"]) : _defaultEdgeColor.R,
                     G = _edgeHasColour ? int.Parse(l.data["g"]) : _defaultEdgeColor.G,
                     B = _edgeHasColour ? int.Parse(l.data["b"]) : _defaultEdgeColor.B,
+                    SourceNode = nodesById[l.source],
+                    TargetNode = nodesById[l.target],
                     StartPos = nodesById[l.source].Pos,
                     EndPos = nodesById[l.target].Pos
                 };
