@@ -17,7 +17,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
     /// It was then refactored by David Birch and Kevin Allain for use within the Map of the Universe project at the Institute
     /// It has been heavily refactored for inclusion in OVE by David Birch
     /// 
-    /// TODO this class reads files in two ways
+    /// NOTE this class reads files in two ways
     /// 1) streaming graph readers
     /// 2) read everything
     /// 
@@ -27,6 +27,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
     /// </summary>
     public class GraphmlReader {
         private readonly ILogger _logger;
+        private bool Rescale = false;
 
         public GraphInfo GraphInfo { get; set; }
         public Dictionary<string, GraphNode> NodesById;
@@ -67,8 +68,9 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
         private float _maxX;
         private float _maxY;
 
-        public GraphmlReader(ILogger logger) {
+        public GraphmlReader(ILogger logger,bool rescale = false) {
             this._logger = logger;
+            this.Rescale = rescale;
         }
 
         private static object TryParseFloat(string data) => float.TryParse(data, out float f) ? (object) f : data;
@@ -164,27 +166,30 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain {
                 Height = _maxY - _minY
             };
 
-            this._xScale = this._objectiveWidth / this.GraphInfo.RectDim.Width; // 16*16  > 16*2
-            this._yScale = this._objectiveHeight / this.GraphInfo.RectDim.Height; // 9*4
+            if (Rescale) {
+                this._xScale = this._objectiveWidth / this.GraphInfo.RectDim.Width; // 16*16  > 16*2
+                this._yScale = this._objectiveHeight / this.GraphInfo.RectDim.Height; // 9*4
 
-            _logger.LogInformation("x Scale = " + this._xScale);
-            _logger.LogInformation("y Scale = " + this._yScale);
+                _logger.LogInformation("x Scale = " + this._xScale);
+                _logger.LogInformation("y Scale = " + this._yScale);
 
-            //rescale nodes...
-            foreach (var node in nodesById.Values) {
-                node.Pos.X = (node.Pos.X - _minX) * this._xScale;
-                node.Pos.Y = (node.Pos.Y - _minY) * this._yScale;
+                //rescale nodes...
+                foreach (var node in nodesById.Values) {
+                    node.Pos.X = (node.Pos.X - _minX) * this._xScale;
+                    node.Pos.Y = (node.Pos.Y - _minY) * this._yScale;
+                }
+
+                var newXMin = nodesById.Min(n => n.Value.Pos.X);
+                var newYMin = nodesById.Min(n => n.Value.Pos.Y);
+                var newXMax = nodesById.Max(n => n.Value.Pos.X);
+                var newYMax = nodesById.Max(n => n.Value.Pos.Y);
+
+                GraphInfo.RectDim = new RectDimension {
+                    Width = newXMax - newXMin,
+                    Height = newYMax - newYMin
+                };
             }
 
-            var newXMin = nodesById.Min(n => n.Value.Pos.X);
-            var newYMin = nodesById.Min(n => n.Value.Pos.Y);
-            var newXMax = nodesById.Max(n => n.Value.Pos.X);
-            var newYMax = nodesById.Max(n => n.Value.Pos.Y);
-
-            GraphInfo.RectDim = new RectDimension {
-                Width = newXMax - newXMin,
-                Height = newYMax - newYMin
-            };
             _logger.LogInformation("writing new graph");
 
             #endregion

@@ -149,7 +149,8 @@ namespace OVE.Service.NetworkTiles.QuadTree {
                 }
             }
 
-            // normalize node positions 
+            // todo normalize node positions 
+            // this is hard because we don't know the bounds of this box - we may well have nodes outside of the box as they connect on distant edges
 
             // Convert the graph objects to JSON and write to disk
             string outputFile = Path.Combine(outputFolder, key + ".json");

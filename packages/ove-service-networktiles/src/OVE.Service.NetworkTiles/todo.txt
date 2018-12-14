@@ -5,7 +5,7 @@ DONE> provide a set of common asset API calls in somewhere other than the asset 
 DONE> what happens when the sparse bag is trying to find more objects than actually exist ?
 > normalize each quad tree bag to 0..1 in x and y 
 DONE> ensure all edges have their nodes in the bag
-> stop changing aspect ratio of observatory
+DONE> stop changing aspect ratio of observatory
 > API to load a quad and store the # clients and # bags
 > API to for renderers to call to return a list of bags 
 > integration with the networks app
