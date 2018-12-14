@@ -7,5 +7,6 @@ DONE> what happens when the sparse bag is trying to find more objects than actua
 DONE> ensure all edges have their nodes in the bag
 DONE> stop changing aspect ratio of observatory
 DONE> API to load a quad and store the # clients and # bags
-> API to for renderers to call to return a list of bags 
+DONE> API to for renderers to call to return a list of bags 
+> respect sparse limits previously passed
 > integration with the networks app

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using OVE.Service.AssetManager.Domain;
 using OVE.Service.Core.Assets;
 using OVE.Service.NetworkTiles.Domain;
 using OVE.Service.NetworkTiles.Models;
@@ -40,24 +39,25 @@ namespace OVE.Service.NetworkTiles.Controllers {
         /// <returns>a json list of the asset files</returns>
         [HttpGet]
         [Route("/api/NetworkTilesController/GetFilesWithin/{id}/.{format?}")]
-        public async Task<ActionResult<IEnumerable<string>>> GetFilesWithin(string id, double x, double y, double xWidth, double yWidth) {
-            //todo this method is just sketched for testing
+        public ActionResult<string> GetFilesWithin(string id, double x, double y, double xWidth, double yWidth) {
             if (id == null) {
                 return NotFound();
             }
 
-            if (await GetAssetStatus(id) != NetworkTilesProcessingStates.Processed) {
+            var cachedQuad = _quadTreeRepository.Request(id);
+            if (cachedQuad == null) {
                 return NoContent();
             }
 
-            var assetModel = await _assetApi.GetAssetById(id);
-
-            var cachedQuad = _quadTreeRepository.Request(assetModel);
-
             List<QuadTreeNode<GraphObject>> leaves = cachedQuad.QuadTree.ReturnMatchingLeaves(x, y, xWidth, yWidth);
 
-            return leaves
-                .Select(graphNode => assetModel.Project +"/"+ Path.GetFileNameWithoutExtension(assetModel.StorageLocation) + "/" + graphNode.Guid + ".json").ToList();// todo fix file names returned
+            var res = leaves.Select(l => new {
+                Id = l.Guid,
+                Centriod = l.Centroid,
+                Url = cachedQuad.BaseUrl + l.Guid + ".json"
+            }).ToArray();
+
+            return JsonConvert.SerializeObject(res);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace OVE.Service.NetworkTiles.Controllers {
                 return NotFound();
             }
 
-            var cache = _quadTreeRepository.Request(assetModel);
+            var cache = _quadTreeRepository.Load(assetModel);
             if (cache == null) {
                 return NoContent();
             }

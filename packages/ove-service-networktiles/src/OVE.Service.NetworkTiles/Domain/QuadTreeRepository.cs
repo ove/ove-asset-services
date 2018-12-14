@@ -25,9 +25,19 @@ namespace OVE.Service.NetworkTiles.Domain {
             _assetApi = assetApi;
         }
 
-        public CachedQuadTree Request(OVEAssetModel asset) {
+        public CachedQuadTree Load(OVEAssetModel asset) {
             return _loadedQuadTrees.GetOrAdd(asset.Id, id => Task.Run(() => LoadQuadTreeAsync(asset)).Result);
             // note this is not async but i don't like the idea of an async concurrent dictionary which is the alternative 
+        }
+
+        public CachedQuadTree Request(string id) {
+            // this method is called by renderers - there is a danger that many of them will calling this will result in multiple load calls
+            return _loadedQuadTrees.GetOrAdd(id, aid =>Task.Run(() => LoadQuadTreeAsync(aid)).Result);  
+        }
+
+        private async Task<CachedQuadTree> LoadQuadTreeAsync(string id) {
+            var asset = await _assetApi.GetAssetById(id);
+            return await LoadQuadTreeAsync(asset);
         }
 
         private async Task<CachedQuadTree> LoadQuadTreeAsync(OVEAssetModel asset) {
@@ -63,5 +73,6 @@ namespace OVE.Service.NetworkTiles.Domain {
             
             _loadedQuadTrees.GetOrAdd(asset.Id, id => new CachedQuadTree(asset, root,baseUrl));
         }
+
     }
 }
