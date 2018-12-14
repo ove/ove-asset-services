@@ -95,6 +95,10 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain.Graph {
                    || IntersectsVerticalSegment(maxX, minY, maxY);
         }
 
+        public override string GetId() {
+            return this.Id;
+        }
+
         /// <summary>
         /// Determines whether or not this link intersects the horizontal
         /// line segment between (y, minX) and (y, maxX).

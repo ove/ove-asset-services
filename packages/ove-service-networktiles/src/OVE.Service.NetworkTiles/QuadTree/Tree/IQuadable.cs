@@ -9,5 +9,6 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     // T GetDimA();
     // T GetDimB();
     bool IsWithin<TT>(QuadTreeNode<TT> q) where TT : IQuadable<double>;
+        string GetId();
     }
 }

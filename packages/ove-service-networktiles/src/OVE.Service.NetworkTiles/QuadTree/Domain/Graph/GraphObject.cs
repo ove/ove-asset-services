@@ -10,5 +10,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain.Graph {
         /// <param name="q"></param>
         /// <returns></returns>
         public abstract bool IsWithin<T>(QuadTreeNode<T> q) where T : IQuadable<double>;
+
+        public abstract string GetId();
     }
 }

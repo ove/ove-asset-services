@@ -88,6 +88,10 @@ namespace OVE.Service.NetworkTiles.QuadTree.Domain.Graph {
             return Pos.X >= minX && Pos.X <= maxX
                                  && Pos.Y >= minY && Pos.Y <= maxY;
         }
+
+        public override string GetId() {
+            return this.Id;
+        }
     }
 
 }

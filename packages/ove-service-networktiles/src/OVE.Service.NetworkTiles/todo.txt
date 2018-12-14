@@ -1,7 +1,9 @@
 TODO:
-> sparse bags do no checking of whether they contain duplicate objects
+DONE> sparse bags do no checking of whether they contain duplicate objects
 DONE> loading of previous quad.json index files
 > API to load a quad and store the # clients and # bags
 > API to for renderers to call to return a list of bags 
 > integration with the networks app
-> provide a set of common asset API calls in somewhere other than the asset processor service ?
+DONE> provide a set of common asset API calls in somewhere other than the asset processor service ?
+DONE> what happens when the sparse bag is trying to find more objects than actually exist ?
+> ensure all edges have their nodes in the bag

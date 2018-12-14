@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace OVE.Service.NetworkTiles.QuadTree.Tree.Utilities.Sparsifier {
     /// <summary>
-    /// todo you must run the printer first? 
+    /// note you must run the printer first? 
     /// </summary>
     public static class Sparsifier {
 
@@ -28,7 +28,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree.Utilities.Sparsifier {
             // load each quad tree as post processed 
             int totalObjects = quad.Counters.GetOrAdd("itemsInThisTree", 0);
 
-            // todo this is getting raw quads and not the sparsified version 
+            // todo be aware this counting is getting raw quads and not the sparsified ones
             var allBags = quad.SubQuads.Select(q => {
                 var itemsInTree = q.Counters.GetOrAdd("itemsInThisTree", 0);
 
@@ -66,8 +66,11 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree.Utilities.Sparsifier {
             //preserve important objects where "importance" is set to 1 
             sparseBag.Objects.AddRange(allBags.SelectMany(b => b.Bags).SelectMany(b => b.Bag.Objects.Where(preserver)));
 
+            // todo move to constants json - requires making this DI which is a pain
             var sparseBiggerThanLeafs = 5;
-            for (int s = sparseBag.Objects.Count; s < factory.MaxObjectsPerBag * sparseBiggerThanLeafs; s++) {
+            int tries = 0;
+            var maxTries = 1000; 
+            for (int s = sparseBag.Objects.Count; s < factory.MaxObjectsPerBag * sparseBiggerThanLeafs && tries <maxTries; s++) {
 
                 double diceRoll = r.NextDouble();
 
@@ -77,19 +80,28 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree.Utilities.Sparsifier {
                     for (var b = 0; b < allBags[q].Bags.Count && !found; b++) {
                         var bag = allBags[q].Bags[b];
 
-                        cumulative +=
-                            bag.OverallProb; // could also not keep cumulative and rely upon  bag.OverallCumulative
+                        cumulative += bag.OverallProb; 
+                        // could also not keep cumulative and rely upon  bag.OverallCumulative
                         if (diceRoll < cumulative) {
-                            int i = r.Next(0, bag.Count); // yes this is double sampling 
-                            var elem = bag.Bag.Objects[i];
-                            sparseBag.Objects.Add(elem);
-                            found = true;
+                            
+                            // find obj and avoid duplicates
+                            while (!found && tries <maxTries) {
+                                tries++;
+                                int i = r.Next(0, bag.Count); // yes this is double sampling 
+                                var elem = bag.Bag.Objects[i];
+                                var id = elem.GetId();
+                                if (sparseBag.Objects.All(o => o.GetId() != id)) {
+                                    sparseBag.Objects.Add(elem);
+                                    found = true;
+                                }
+                            }
                         }
                     }
                 }
 
                 if (!found || cumulative - 1 > 0.001) {
-                    throw new Exception("Bad statistics! " + diceRoll + " / " + cumulative);
+                    // either a maths error or we are over sampling a small bag 
+                    tries++;
                 }
             }
 
