@@ -3,10 +3,10 @@
 namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     public class QuadCentroid : IEquatable<QuadCentroid> {
 
-        public readonly double XCentroid;
-        public readonly double YCentroid;
-        public readonly double XWidth;
-        public readonly double YWidth;
+        public double XCentroid { get; set; }
+        public double YCentroid { get; set; }
+        public double XWidth { get; set; }
+        public double YWidth { get; set; }
 
         #region IEquatable<QuadCentroid>
 
@@ -38,6 +38,11 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
 
         public static bool operator !=(QuadCentroid left, QuadCentroid right) {
             return !Equals(left, right);
+        }
+
+        // ReSharper disable once UnusedMember.Global Json Serialization 
+        public QuadCentroid() {
+
         }
 
         public QuadCentroid(double xCentroid, double yCentroid, double xWidth, double yWidth) {

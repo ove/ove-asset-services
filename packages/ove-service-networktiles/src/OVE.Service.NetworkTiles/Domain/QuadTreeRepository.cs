@@ -55,7 +55,7 @@ namespace OVE.Service.NetworkTiles.Domain {
 
             try {
                 using (var wc = new WebClient()) {
-                    string serialized = wc.DownloadString(url);
+                    string serialized = await  wc.DownloadStringTaskAsync(url);
                     quadTree = JsonConvert.DeserializeObject<QuadTreeNode<GraphObject>>(serialized);
                 }
             } catch (Exception e) {

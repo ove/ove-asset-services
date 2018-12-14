@@ -12,8 +12,8 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
     public class QuadTreeNode<T> where T : IQuadable<double> {
         private readonly ILogger _logger;
         public string Guid { get; set; } = System.Guid.NewGuid().ToString();
-        public string CreationTime { get; }
-        public QuadCentroid Centroid { get; }
+        public string CreationTime { get; set; }
+        public QuadCentroid Centroid { get; set; }
         public QuadTreeNode<T>[] SubQuads { get; set; }
 
         [NonSerialized] 
@@ -24,7 +24,7 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
 
         public int ItemsInThisTree { get; set; }
 
-        public string TreeId { get; }
+        public string TreeId { get; set;}
         [NonSerialized] public QuadTreeBag<T> SparseBag;
         public string SparseBagId { get; set; }
         public int Depth { get; set; }
@@ -35,6 +35,9 @@ namespace OVE.Service.NetworkTiles.QuadTree.Tree {
             CreationTime = DateTime.Now.ToString("s/m/H/dd/M/yyyy");
         }
 
+        public QuadTreeNode() {
+
+        }
         // Critical
         public QuadTreeNode(ILogger logger, QuadCentroid centroid, string treeId) {
             _logger = logger;
