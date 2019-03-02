@@ -1,3 +1,5 @@
+⛔️ DEPRECATED This repository has been archived in favour of the [new AM Service](https://github.com/ove/ove-asset-manager)
+
 # Open Visualisation Environment - Asset Services
 
 This collection of services provides end users with a simple way of managing and processing content to be displayed using [Open Visualisation Environment (OVE)](https://github.com/ove/ove).
